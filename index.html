@@ -54,6 +54,12 @@
         .pillar-card.expanded .expand-toggle-icon {
             transform: rotate(180deg);
         }
+        .progress-message {
+            margin-top: 1rem;
+            font-size: 1.125rem; /* text-lg */
+            font-weight: 500; /* font-medium */
+            color: #475569; /* slate-600 */
+        }
     </style>
 </head>
 <body class="text-slate-700">
@@ -89,6 +95,7 @@
                         <div class="chart-container">
                              <canvas id="progressChart"></canvas>
                         </div>
+                        <p id="progress-message" class="progress-message text-center"></p>
                     </div>
                 </div>
             </section>
@@ -143,10 +150,10 @@
     <script>
         const AppState = {
             currentView: 'dashboard',
-            // Will be calculated based on startDate and current date
-            today: 1,
+            today: 1, // This will be calculated from startDate
             completedDays: new Set(),
-            startDate: null // Will store the challenge start date (e.g., '2023-10-27')
+            startDate: null, // Stores the challenge start date (e.g., '2023-10-27')
+            lastVisitDate: null // Stores the date of the last visit to check for new days
         };
 
         const dailyTasks = [
@@ -234,15 +241,17 @@
         }
 
         function renderDashboard() {
-            // Ensure today is capped at 30 if the challenge duration is exceeded
+            // Get the current challenge day (capped at 30 for display purposes on dashboard)
             const currentChallengeDay = AppState.today > 30 ? 30 : AppState.today;
-            // Get the task for the current challenge day, or Day 1 if AppState.today is invalid (shouldn't happen with new logic)
-            const taskForToday = dailyTasks.find(t => t.day === currentChallengeDay) || dailyTasks[0]; 
+            
+            // Get the task for the current challenge day. If we're past day 30, show Day 30's task.
+            const taskForToday = dailyTasks.find(t => t.day === currentChallengeDay) || dailyTasks[dailyTasks.length - 1]; 
             
             document.getElementById('today-day').textContent = currentChallengeDay;
             document.getElementById('today-task').textContent = taskForToday.task;
 
             const completeBtn = document.getElementById('complete-today-btn');
+            // Check if the current challenge day has been completed
             if (AppState.completedDays.has(currentChallengeDay)) {
                 completeBtn.textContent = 'Completed!';
                 completeBtn.disabled = true;
@@ -254,7 +263,7 @@
                 completeBtn.classList.remove('bg-green-500', 'hover:bg-green-500');
                 completeBtn.classList.add('bg-amber-500', 'hover:bg-amber-600');
             }
-            renderProgressChart();
+            renderProgressChart(); // Update the chart whenever dashboard renders
         }
 
         function renderCalendar() {
@@ -272,7 +281,7 @@
                     baseClasses = 'bg-green-100 text-green-700 shadow-sm';
                 }
                 
-                // Highlight the current *challenge* day
+                // Highlight the current *challenge* day on the calendar
                 if (task.day === AppState.today) {
                     baseClasses += ' ring-2 ring-amber-500';
                 }
@@ -329,7 +338,8 @@
         function renderProgressChart() {
             const ctx = document.getElementById('progressChart').getContext('2d');
             const completedCount = AppState.completedDays.size;
-            const remainingCount = 30 - completedCount;
+            const totalDays = 30; // Total days in the challenge
+            const remainingCount = totalDays - completedCount;
 
             const data = {
                 labels: ['Completed', 'Remaining'],
@@ -345,7 +355,19 @@
                 }]
             };
 
-            const chartTitle = `${completedCount} of 30 Days Complete`;
+            let progressMessage = '';
+            if (completedCount === totalDays) {
+                progressMessage = "🎉 Challenge Completed! You're amazing!";
+            } else if (completedCount >= totalDays / 2) {
+                progressMessage = `Halfway there! Keep glowing! (${completedCount}/${totalDays})`;
+            } else if (completedCount > 0) {
+                progressMessage = `You're on your way! (${completedCount}/${totalDays})`;
+            } else {
+                progressMessage = `Start your journey today! (${completedCount}/${totalDays})`;
+            }
+            document.getElementById('progress-message').textContent = progressMessage;
+
+            const chartTitle = `${completedCount} of ${totalDays} Days Complete`;
 
             if(progressChartInstance) {
                 progressChartInstance.data.datasets[0].data = [completedCount, remainingCount];
@@ -399,46 +421,65 @@
             }, 3000);
         }
 
+        // Helper to format date to YYYY-MM-DD
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
         function loadState() {
             const savedState = localStorage.getItem('glowUpAppState');
             if (savedState) {
                 const parsedState = JSON.parse(savedState);
                 AppState.completedDays = new Set(parsedState.completedDays || []);
                 AppState.startDate = parsedState.startDate ? new Date(parsedState.startDate) : null;
+                AppState.lastVisitDate = parsedState.lastVisitDate || null; // Load last visit date
             }
+
+            // Normalize current date for calculation
+            const todayActual = new Date();
+            todayActual.setHours(0, 0, 0, 0); 
+            const todayFormatted = formatDate(todayActual);
 
             // If no start date, set it to today and initialize
             if (!AppState.startDate) {
-                AppState.startDate = new Date();
-                AppState.startDate.setHours(0, 0, 0, 0); // Normalize to start of day
-                saveState(); // Save the new start date
+                AppState.startDate = new Date(todayActual); // Use normalized date
+                AppState.lastVisitDate = todayFormatted; // Set last visit to today
+                saveState(); // Save the new start date and last visit
             }
 
-            // Calculate current challenge day
-            const todayActual = new Date();
-            todayActual.setHours(0, 0, 0, 0); // Normalize to start of day
-
+            // Calculate current challenge day based on startDate
             const diffTime = Math.abs(todayActual.getTime() - AppState.startDate.getTime());
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            
-            // AppState.today should be 1-indexed. If diffDays is 0 (same day as start), it's Day 1.
-            // Otherwise, it's diffDays + 1 to account for the starting day.
-            AppState.today = diffDays === 0 ? 1 : diffDays + 1;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); // Use floor for exact days passed
 
-            // Ensure AppState.today doesn't exceed 30 days for display purposes on the dashboard,
-            // but allow tasks beyond day 30 to be viewed in the calendar if desired
-            if (AppState.today > 30) {
-                // If the user is past 30 days, we can show Day 30's task as the "final" task.
-                // Or you could display a "Challenge Completed!" message.
-                // For now, we'll cap the displayed dashboard day to 30.
-                console.log("Challenge likely complete or passed 30 days.");
+            AppState.today = diffDays + 1; // Day 1 for first day, +1 for subsequent days
+
+            // Check if it's a new day since the last visit
+            if (AppState.lastVisitDate !== todayFormatted) {
+                console.log(`New day detected! Last visit: ${AppState.lastVisitDate}, Current day: ${todayFormatted}`);
+                // No specific action needed here other than AppState.today being updated,
+                // as the dashboard will automatically reflect the new day's task.
+                // You could add a "Welcome to Day X!" message if desired.
+                AppState.lastVisitDate = todayFormatted; // Update last visit date
+                saveState(); // Save updated last visit date
             }
+
+            // Log current state for debugging
+            console.log("AppState after loadState:", {
+                today: AppState.today,
+                completedDays: Array.from(AppState.completedDays),
+                startDate: AppState.startDate ? AppState.startDate.toISOString().split('T')[0] : null,
+                lastVisitDate: AppState.lastVisitDate
+            });
         }
 
         function saveState() {
             const stateToSave = {
                 completedDays: Array.from(AppState.completedDays),
-                startDate: AppState.startDate ? AppState.startDate.toISOString().split('T')[0] : null // Save as YYYY-MM-DD string
+                startDate: AppState.startDate ? formatDate(AppState.startDate) : null, // Save as YYYY-MM-DD string
+                lastVisitDate: AppState.lastVisitDate // Save last visit date
             };
             localStorage.setItem('glowUpAppState', JSON.stringify(stateToSave));
         }
@@ -478,15 +519,19 @@
 
             // Setup complete button
             document.getElementById('complete-today-btn').addEventListener('click', () => {
-                const currentChallengeDay = AppState.today > 30 ? 30 : AppState.today; // Mark day 30 if past 30 days
-                if (currentChallengeDay <= 30 && !AppState.completedDays.has(currentChallengeDay)) {
+                const currentChallengeDay = AppState.today; // This is the day based on challenge progress
+
+                if (currentChallengeDay > 30) {
+                     showMessage('All 30 days are complete! You are amazing!');
+                     return; // Don't allow marking beyond 30 days
+                }
+
+                if (!AppState.completedDays.has(currentChallengeDay)) {
                     AppState.completedDays.add(currentChallengeDay);
                     saveState();
-                    renderDashboard();
+                    renderDashboard(); // Re-render dashboard to update button state and chart
                     renderCalendar(); // Re-render calendar to show day as complete
                     showMessage('Great job! Mission complete!');
-                } else if (currentChallengeDay > 30) {
-                    showMessage('Challenge completed! You\'ve done all 30 days!');
                 } else {
                     showMessage('You' + "'" + 've already completed today' + "'" + 's mission!');
                 }
@@ -495,7 +540,7 @@
             // Initial render
             renderDashboard();
             renderCalendar();
-            renderPillars(); // This now includes the expandable card logic
+            renderPillars(); 
             renderSchedule('weekday');
         });
     </script>
