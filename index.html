@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>90-Day Holistic Glow-Up Dashboard</title>
+    <title>90-Day Glow-Up Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,15 +12,14 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8f7f4; /* Off-white */
-            color: #475569; /* Slate-700 */
+            background-color: #f8f7f4;
         }
         .nav-link {
             transition: all 0.3s ease;
             cursor: pointer;
         }
         .nav-link.active {
-            color: #f59e0b; /* Amber-500 */
+            color: #f59e0b;
             border-bottom: 2px solid #f59e0b;
         }
         .chart-container {
@@ -37,10 +36,10 @@
                 height: 350px;
             }
         }
-        .pillar-content.hidden {
+        .pillar-content.hidden, .skill-content.hidden {
             display: none;
         }
-        .pillar-card {
+        .pillar-card, .skill-card {
             position: relative;
         }
         .expand-toggle-icon {
@@ -51,7 +50,8 @@
             color: #f59e0b;
             transition: transform 0.3s ease;
         }
-        .pillar-card.expanded .expand-toggle-icon {
+        .pillar-card.expanded .expand-toggle-icon,
+        .skill-card.expanded .expand-toggle-icon {
             transform: rotate(180deg);
         }
         .progress-message {
@@ -60,32 +60,31 @@
             font-weight: 500;
             color: #475569;
         }
-        #message-box {
-            z-index: 1000;
-        }
     </style>
 </head>
 <body class="text-slate-700">
 
     <div id="app" class="max-w-7xl mx-auto p-4 md:p-8">
         <header class="text-center mb-8">
-            <h1 class="text-4xl md:text-5xl font-bold text-slate-800">Your 90-Day Holistic Glow-Up</h1>
-            <p class="mt-2 text-lg text-slate-500">A comprehensive journey to a more confident and capable you.</p>
+            <h1 class="text-4xl md:text-5xl font-bold text-slate-800">Your 90-Day Glow-Up</h1>
+            <p class="mt-2 text-lg text-slate-500">A complete guide to a more confident you.</p>
         </header>
 
         <nav class="flex justify-center border-b border-slate-200 mb-8 space-x-4 sm:space-x-8">
             <a data-view="dashboard" class="nav-link active py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">Dashboard</a>
             <a data-view="plan" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">90-Day Plan</a>
             <a data-view="pillars" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">The Pillars</a>
+            <a data-view="skills" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">Skills</a>
             <a data-view="schedule" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">Daily Schedule</a>
         </nav>
 
         <main>
             <section id="dashboard" class="view">
                 <div class="text-center mb-12">
-                     <h2 class="text-3xl font-bold text-slate-800 mb-2">Welcome! Here's your focus for today.</h2>
-                     <p class="text-slate-500">Consistency is your superpower. Let's make today count!</p>
+                    <h2 class="text-3xl font-bold text-slate-800 mb-2">Welcome! Here's your focus for today.</h2>
+                    <p class="text-slate-500">Consistency is your superpower. Let's make today count!</p>
                 </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div class="md:col-span-2 bg-white p-6 rounded-2xl shadow-lg">
                         <h3 class="font-bold text-xl text-slate-800 mb-4">✨ Today's Mission (Day <span id="today-day"></span>)</h3>
@@ -95,7 +94,7 @@
                     <div class="bg-white p-6 rounded-2xl shadow-lg">
                         <h3 class="font-bold text-xl text-slate-800 mb-4">📊 Progress Tracker</h3>
                         <div class="chart-container">
-                             <canvas id="progressChart"></canvas>
+                            <canvas id="progressChart"></canvas>
                         </div>
                         <p id="progress-message" class="progress-message text-center"></p>
                     </div>
@@ -103,33 +102,46 @@
             </section>
 
             <section id="plan" class="view hidden">
-                 <div class="text-center mb-8">
-                     <h2 class="text-3xl font-bold text-slate-800 mb-2">Your 90-Day Calendar</h2>
-                     <p class="text-slate-500">Click on any day to see your mission. Today is highlighted!</p>
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-slate-800 mb-2">Your 90-Day Calendar</h2>
+                    <p class="text-slate-500">Click on any day to see your mission. Today is highlighted for you!</p>
                 </div>
-                <div id="calendar-grid" class="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-4"></div>
+                <div id="calendar-grid" class="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-4">
+                </div>
             </section>
 
             <section id="pillars" class="view hidden">
                 <div class="text-center mb-8">
-                     <h2 class="text-3xl font-bold text-slate-800 mb-2">The Pillars of Your Holistic Glow-Up</h2>
-                     <p class="text-slate-500">These core principles guide your transformation. Click to learn more!</p>
+                    <h2 class="text-3xl font-bold text-slate-800 mb-2">The Six Pillars of Your Glow-Up</h2>
+                    <p class="text-slate-500">These are the core principles behind your daily actions. Click each one to learn more.</p>
                 </div>
-                <div id="pillars-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                <div id="pillars-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                </div>
+            </section>
+
+            <section id="skills" class="view hidden">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-slate-800 mb-2">Level Up Your Skills!</h2>
+                    <p class="text-slate-500">Explore new interests and develop valuable abilities. Click each skill area to get started!</p>
+                </div>
+                <div id="skills-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                </div>
             </section>
 
             <section id="schedule" class="view hidden">
                 <div class="text-center mb-8">
-                     <h2 class="text-3xl font-bold text-slate-800 mb-2">Your Daily Blueprint</h2>
-                     <p class="text-slate-500">A template for success. Structure your days for optimal growth.</p>
+                    <h2 class="text-3xl font-bold text-slate-800 mb-2">Your Daily Blueprint</h2>
+                    <p class="text-slate-500">A template for success. Use this to structure your days.</p>
                 </div>
                 <div class="flex justify-center mb-6">
                     <button id="weekday-btn" class="schedule-btn bg-amber-500 text-white py-2 px-6 rounded-l-lg font-semibold">Weekday</button>
                     <button id="weekend-btn" class="schedule-btn bg-slate-200 text-slate-600 py-2 px-6 rounded-r-lg font-semibold">Weekend</button>
                 </div>
-                <div id="schedule-content" class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg max-w-4xl mx-auto"></div>
+                <div id="schedule-content" class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg max-w-4xl mx-auto">
+                </div>
             </section>
         </main>
+
     </div>
 
     <div id="task-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
@@ -140,142 +152,145 @@
         </div>
     </div>
     
-    <div id="message-box" class="fixed bottom-5 right-5 bg-green-500 text-white py-3 px-5 rounded-lg shadow-xl transform translate-y-20 opacity-0 transition-all duration-500">Task marked as complete!</div>
+    <div id="message-box" class="fixed bottom-5 right-5 bg-green-500 text-white py-3 px-5 rounded-lg shadow-xl transform translate-y-20 opacity-0 transition-all duration-500">
+        Task marked as complete!
+    </div>
 
     <script>
+        const TOTAL_CHALLENGE_DAYS = 90;
+
         const AppState = {
             currentView: 'dashboard',
-            today: 1, 
+            today: 1,
             completedDays: new Set(),
             startDate: null,
             lastVisitDate: null
         };
-        const TOTAL_DAYS = 90;
 
-        const dailyTasks = [];
-        const taskTemplates = {
-            Mind: [
-                "Practice 10 minutes of mindfulness or meditation.",
-                "Journal for 15 minutes, focusing on gratitude or reflection.",
-                "Read a non-fiction book or educational article for 20 minutes.",
-                "Learn 3 new vocabulary words.",
-                "Solve a challenging logic puzzle.",
-                "Listen to an educational podcast for 30 minutes.",
-                "Spend 5 minutes deep breathing and setting intentions for the day.",
-                "Reflect on one positive thing that happened today before bed."
-            ],
-            Body: [
-                "Go for a 20-minute walk or light jog.",
-                "Complete 15 minutes of bodyweight exercises (squats, push-ups, planks).",
-                "Do 10 minutes of stretching or yoga.",
-                "Drink 2 extra glasses of water.",
-                "Incorporate a serving of fruit into your breakfast.",
-                "Replace one sugary drink with water.",
-                "Try a new healthy snack option.",
-                "Get 7-9 hours of quality sleep tonight."
-            ],
-            Skin: [
-                "Gently cleanse your face morning and night.",
-                "Apply sunscreen (or seek shade if indoors) before going outside.",
-                "Moisturize your skin (face and body) after showering.",
-                "Focus on staying hydrated for glowing skin.",
-                "Change your pillowcase for clearer skin."
-            ],
-            Hygiene: [
-                "Brush and floss your teeth thoroughly morning and night.",
-                "Take a refreshing shower and use deodorant.",
-                "Ensure you wear fresh, clean clothes.",
-                "Clean your nails and hands."
-            ],
-            Style: [
-                "Plan tomorrow's outfit tonight.",
-                "Practice good posture for 5 minutes (imagine a string pulling you up).",
-                "Try a new, simple hairstyle.",
-                "Organize one section of your wardrobe.",
-                "Wear an outfit that makes you feel confident today."
-            ],
-            Skills_Coding: [
-                "Spend 30 minutes on an online coding tutorial (e.g., Python basics).",
-                "Solve a simple coding challenge on a platform like HackerRank or LeetCode (easy).",
-                "Learn a new HTML/CSS tag or property and implement it.",
-                "Watch a tutorial on building a basic web component.",
-                "Understand one fundamental programming concept (e.g., loops, variables)."
-            ],
-            Skills_Gaming: [
-                "Play a strategic game (e.g., Chess, a puzzle game) for 30 minutes, focusing on strategy.",
-                "Analyze a game you played, identifying areas for improvement.",
-                "Learn a new tactic or opening in your favorite strategic game.",
-                "Complete a logic puzzle (e.g., Sudoku, nonogram)."
-            ],
-            Social: [
-                "Initiate a friendly conversation with a new person (online or in person).",
-                "Practice active listening in a conversation for 10 minutes.",
-                "Send a thoughtful message to a friend or family member.",
-                "Offer a genuine compliment to someone.",
-                "Practice clear articulation when speaking."
-            ],
-            Environment: [
-                "Dedicate 15 minutes to tidying your desk or study area.",
-                "Declutter one small drawer or shelf.",
-                "Recycle or dispose of items you no longer need.",
-                "Organize your digital files (e.g., desktop, downloads folder).",
-                "Create a small, personalized 'calm corner' in your room."
-            ],
-            Creativity: [
-                "Spend 20 minutes sketching or doodling.",
-                "Write a short paragraph for a story or journal.",
-                "Listen to a new genre of music actively.",
-                "Try a simple DIY craft from an online tutorial.",
-                "Brainstorm 5 new ideas for anything (project, hobby, etc.)."
-            ]
-        };
+        const dailyTasks = Array.from({ length: TOTAL_CHALLENGE_DAYS }, (_, i) => {
+            const day = i + 1;
+            let pillar, task;
 
-        const pillarInfo = {
-            Mind: { icon: '🧠', title: 'Mind & Growth', content: "Cultivate mental clarity, reduce stress, and expand your knowledge. This pillar focuses on practices like mindfulness, journaling, reading, and continuous learning." },
-            Body: { icon: '💪', title: 'Body & Vitality', content: "Nourish your physical self to boost energy and well-being. Focus on consistent exercise, balanced nutrition, proper hydration, and restful sleep for a vibrant you." },
-            Skin: { icon: '✨', title: 'Radiant Skin', content: "Achieve clean, healthy skin with a simple routine. Prioritize cleansing, moisturizing, and sun protection for a glowing complexion." },
-            Hygiene: { icon: '💧', title: 'Impeccable Hygiene', content: "Feel and smell fresh all day. Key habits include daily showers, consistent dental care, using deodorant, and wearing clean clothes." },
-            Style: { icon: '👕', title: 'Cultivate Your Style', content: "Express yourself and feel confident. Develop an understanding of personal style, maintain good posture, and choose outfits that make you feel great." },
-            Skills_Overall: { icon: '🚀', title: 'Skills & Expertise', content: "Dive deep into developing new, attractive skills like coding, strategic gaming, a new language, or a creative pursuit. Expand your capabilities and intellect." },
-            Social: { icon: '🤝', title: 'Social & Connection', content: "Strengthen your relationships and expand your network. Practice effective communication, active listening, and make conscious efforts to connect with others." },
-            Environment: { icon: '🏡', title: 'Environment & Productivity', content: "Create a positive and efficient living space that supports your goals. Focus on decluttering, organizing, and developing habits that streamline your daily life." },
-            Creativity: { icon: '🎨', title: 'Unleash Creativity', content: "Explore artistic outlets, creative writing, or innovative problem-solving. Fostering creativity adds depth to your personality and makes you more engaging." }
-        };
+            if (day <= 30) {
+                // Original 30-day tasks (examples, expand as needed)
+                switch (day % 10) {
+                    case 1: pillar = 'Mind'; task = "Goal Setting & Hydration: Write down your goals. Track water intake."; break;
+                    case 2: pillar = 'Skin'; task = "Simple Cleansing: Gentle face wash morning and night."; break;
+                    case 3: pillar = 'Body'; task = "Mindful Movement: 20-minute walk or in-place exercise."; break;
+                    case 4: pillar = 'Mind'; task = "Study Space Overhaul: Organize your desk and study area."; break;
+                    case 5: pillar = 'Nourish'; task = "Fruit Focus: Try a new fruit as a snack."; break;
+                    case 6: pillar = 'Nourish'; task = "Healthy Swap: Swap one sugary drink for water."; break;
+                    case 7: pillar = 'Mind'; task = "Reflection & Relaxation: Review your week. Listen to music or read."; break;
+                    case 8: pillar = 'Body'; task = "Workout Fun: 15-minute dance workout."; break;
+                    case 9: pillar = 'Mind'; task = "Active Learning: Summarize a chapter in your own words."; break;
+                    case 0: pillar = 'Body'; task = "Strength Starter: 2 sets of 10 squats, 20-second plank."; break;
+                    default: pillar = 'Mind'; task = "Daily check-in: How are you feeling today?"; break;
+                }
+                if (day === 11) { pillar = 'Hygiene'; task = "Hygiene Refresh: Clean toothbrush. Wear fresh clothes."; }
+                if (day === 12) { pillar = 'Style'; task = "Style Fun: Try a new, simple hairstyle."; }
+                if (day === 13) { pillar = 'Nourish'; task = "Snack Smart: Choose fruit over chips/candy."; }
+                if (day === 14) { pillar = 'Mind'; task = "Mid-Point Check-in: Notice any changes? Pat yourself on the back!"; }
+                if (day === 15) { pillar = 'Nourish'; task = "Breakfast Boost: Start with a banana or fruit."; }
+                if (day === 16) { pillar = 'Mind'; task = "Brain Boost: 20 minutes reading for fun."; }
+                if (day === 17) { pillar = 'Body'; task = "Cardio Challenge: 3 sets of 30 jumping jacks."; }
+                if (day === 18) { pillar = 'Style'; task = "Closet Cleanse: Organize favorite outfits."; }
+                if (day === 19) { pillar = 'Mind'; task = "Gratitude Practice: Think of one good thing today."; }
+                if (day === 20) { pillar = 'Skin'; task = "Self-Care Simple: Relaxing bath/shower, gentle skin scrub."; }
+                if (day === 21) { pillar = 'Body'; task = "Outdoor Time: 15 minutes outside (not midday sun)."; }
+                if (day === 22) { pillar = 'Nourish'; task = "Kitchen Helper: Help with family meal prep."; }
+                if (day === 23) { pillar = 'Mind'; task = "Focus Power: Try Pomodoro Technique for homework."; }
+                if (day === 24) { pillar = 'Body'; task = "Full-Body Flow: 20-min routine: jumping jacks, squats, push-ups, plank."; }
+                if (day === 25) { pillar = 'Hygiene'; task = "Scent-sational Self-Care: Daily deodorant. Baby powder for freshness."; }
+                if (day === 26) { pillar = 'Style'; task = "Outfit of the Day: Pick your favorite clean outfit, wear with confidence."; }
+                if (day === 27) { pillar = 'Mind'; task = "Mindful Morning: 5 minutes quiet stretching."; }
+                if (day === 28) { pillar = 'Mind'; task = "Knowledge is Power: Watch an interesting educational video."; }
+                if (day === 29) { pillar = 'Style'; task = "Confidence Boost: Stand straight, shoulders back, smile in mirror."; }
+                if (day === 30) { pillar = 'Mind'; task = "Celebrate You! Look back at Day 1. Be proud of your consistency!"; }
+            } else if (day <= 60) {
+                // Days 31-60: Deeper dive, new habits
+                switch (day % 10) {
+                    case 1: pillar = 'Nourish'; task = "Balanced Meal: Include a protein, veggie, and carb in one meal."; break;
+                    case 2: pillar = 'Body'; task = "Core Strength: Try 3 sets of 15 crunches."; break;
+                    case 3: pillar = 'Skin'; task = "Exfoliation Intro: Gently exfoliate face (once this week)."; break;
+                    case 4: pillar = 'Hygiene'; task = "Oral Care: Add mouthwash to your routine."; break;
+                    case 5: pillar = 'Mind'; task = "Journaling: Write 3 things you're grateful for."; break;
+                    case 6: pillar = 'Style'; task = "Color Pop: Wear an item with a color you love."; break;
+                    case 7: pillar = 'Nourish'; task = "Hydration Challenge: Drink an extra glass of water."; break;
+                    case 8: pillar = 'Body'; task = "Active Chores: Help with active chores like sweeping or gardening for 20 min."; break;
+                    case 9: pillar = 'Mind'; task = "New Skill Mini-Lesson: Watch a short tutorial on something new (e.g., drawing, simple coding)."; break;
+                    case 0: pillar = 'Skin'; task = "Moisturize! Apply moisturizer after washing your face."; break;
+                    default: pillar = 'Mind'; task = "Discover a new educational podcast or channel."; break;
+                }
+                if (day === 35) { pillar = 'Mind'; task = "Mindful Breathing: Practice 5 minutes of deep breathing exercises."; }
+                if (day === 45) { pillar = 'Body'; task = "Flexibility Focus: Spend 10 minutes stretching your major muscle groups."; }
+                if (day === 50) { pillar = 'Nourish'; task = "Healthy Snack Prep: Prepare some healthy snacks for the next few days."; }
+                if (day === 55) { pillar = 'Style'; task = "Accessories Experiment: Try adding a simple accessory like a watch or a bracelet."; }
+                if (day === 59) { pillar = 'Mind'; task = "Future Planning: Jot down some ideas for after the 90-day challenge."; }
+                if (day === 60) { pillar = 'Mind'; task = "60-Day Review: Reflect on progress, celebrate consistency. You're doing great!"; }
 
-        // Dynamically generate 90 diverse daily tasks
-        const categories = ['Mind', 'Body', 'Skin', 'Hygiene', 'Style', 'Skills_Coding', 'Skills_Gaming', 'Social', 'Environment', 'Creativity', 'Nourish'];
-        let categoryIndex = 0;
-        for (let i = 1; i <= TOTAL_DAYS; i++) {
-            const currentCategory = categories[categoryIndex % categories.length];
-            const tasksForCategory = taskTemplates[currentCategory] || taskTemplates[currentCategory.split('_')[0]] || [];
-            const taskText = tasksForCategory[Math.floor(Math.random() * tasksForCategory.length)];
-            dailyTasks.push({ day: i, pillar: currentCategory.replace('_', ' '), task: taskText });
-            categoryIndex++;
-        }
+            } else {
+                // Days 61-90: Solidifying habits, advanced steps, long-term vision
+                switch (day % 10) {
+                    case 1: pillar = 'Nourish'; task = "Cook a Simple Dish: Help prepare a main dish for your family."; break;
+                    case 2: pillar = 'Body'; task = "Incorporate Stairs: Take the stairs instead of the elevator/escalator today."; break;
+                    case 3: pillar = 'Skin'; task = "Sun Protection Awareness: Learn about SPF and why it's important."; break;
+                    case 4: pillar = 'Hygiene'; task = "Laundry Day: Help with laundry, especially your own clothes."; break;
+                    case 5: pillar = 'Mind'; task = "Digital Detox: Spend 1 hour away from screens before bed."; break;
+                    case 6: pillar = 'Style'; task = "Outfit Planning: Plan outfits for the entire week ahead."; break;
+                    case 7: pillar = 'Body'; task = "Interval Training: Try short bursts of high-intensity activity during your walk."; break;
+                    case 8: pillar = 'Nourish'; task = "Smoothie Experiment: Create your own healthy smoothie recipe."; break;
+                    case 9: pillar = 'Mind'; task = "Problem Solving: Tackle a challenging puzzle or brain teaser."; break;
+                    case 0: pillar = 'Hygiene'; task = "Clean Your Space: Dedicate 30 minutes to tidying your room."; break;
+                    default: pillar = 'Mind'; task = "Read an article or watch a documentary on a topic you're curious about."; break;
+                }
+                if (day === 75) { pillar = 'Mind'; task = "Goal Refinement: Revisit your initial goals. How have they evolved?"; }
+                if (day === 80) { pillar = 'Body'; task = "Challenge Yourself: Try a longer workout or a new physical activity."; }
+                if (day === 85) { pillar = 'Skin'; task = "Identify Skin Type: Do a simple test to understand your skin type (oily, dry, combo)."; }
+                if (day === 89) { pillar = 'Mind'; task = "Vision Board: Create a small vision board for your future self."; }
+                if (day === 90) { pillar = 'Mind'; task = "Final Celebration! You've completed 90 days! Acknowledge your incredible transformation and plan for continued growth!"; }
+            }
+            return { day, pillar, task };
+        });
+
+        const pillarsData = [
+            { id: 'nourish', icon: '🍎', title: 'Nourish Your Body', content: "Fuel your body for energy and health. Focus on fruits (2-3 servings daily), 'hidden' veggies in dishes like lumpia or spaghetti sauce, and drink 6-8 glasses of water. A smoothie with banana and malunggay is a great nutrient boost." },
+            { id: 'body', icon: '💪', title: 'Move Your Body', content: "Get stronger and boost your mood without a gym. Aim for 30 minutes of movement 5 days a week. Combine 15-20 mins of cardio (dancing, jumping jacks) with 10-15 mins of strength (squats, planks, push-ups)." },
+            { id: 'skin', icon: '✨', title: 'Radiant Skin', content: "Achieve clean, healthy skin with a simple routine. Your #1 priority is cleansing your face gently with mild soap and water every morning and night. For sun protection, seek shade, wear a cap, or use an umbrella, especially from 10 AM to 4 PM." },
+            { id: 'hygiene', icon: '💧', title: 'Impeccable Hygiene', content: "Feel and smell fresh all day. Key habits include daily showers (especially after exercise), brushing your teeth twice a day, using deodorant every morning, and wearing completely fresh, clean clothes every day." },
+            { id: 'mind', icon: '🧠', title: 'Sharpen Your Mind', content: "Make learning more effective. Keep a dedicated, organized study space. Use the Pomodoro Technique (25 mins focus, 5 mins break) to avoid burnout. Review your notes for 15 minutes each evening to retain information." },
+            { id: 'style', icon: '👕', title: 'Cultivate Your Style', content: "Express yourself and feel confident. Use Pinterest for inspiration. Master the basics like well-fitting jeans and clean t-shirts. A simple outfit looks great with neat hair and good posture. Pick out your clothes the night before." }
+        ];
+
+        const skillsData = [
+            { id: 'coding', icon: '💻', title: 'Coding & Digital', content: "Start with basics! Explore free online tutorials for Scratch or Python. Learn simple web development with HTML/CSS. Practice typing skills. Understand online safety and responsible digital citizenship." },
+            { id: 'creative', icon: '🎨', title: 'Creative Arts', content: "Pick up a pen or brush! Try sketching daily for 10 minutes. Experiment with different art styles from online tutorials. Learn basic music theory or a simple song on an instrument. Write short stories or poems." },
+            { id: 'gaming', icon: '🎮', title: 'Gaming & Hobbies', content: "Balance is key! Set screen time limits. Focus on games that challenge your mind or strategy. Explore new hobbies like board games, puzzles, or collecting. Join online communities for shared interests responsibly." },
+            { id: 'life-skills', icon: '🛠️', title: 'Practical Life Skills', content: "Be self-sufficient! Learn basic cooking (e.g., frying an egg, boiling pasta). Practice simple household repairs. Manage a small budget or allowance. Learn how to responsibly use public transportation." }
+        ];
 
         const schedulesData = {
             weekday: `
                 <h4 class="font-bold text-lg mb-4 text-slate-700">Weekday Schedule</h4>
                 <ul class="space-y-3 text-slate-600">
-                    <li><strong>6:00-6:30 AM:</strong> Wake Up, Hydrate, Stretch, Personal Hygiene.</li>
-                    <li><strong>6:30-7:00 AM:</strong> Healthy Breakfast, Plan Day's Top 3 Tasks.</li>
-                    <li><strong>7:00 AM-12:00 PM:</strong> Work/School Focus (Stay Hydrated).</li>
-                    <li><strong>12:00-1:00 PM:</strong> Lunch & Short Mindful Break.</li>
-                    <li><strong>1:00-5:00 PM:</strong> Work/School Focus (Active Breaks Recommended).</li>
-                    <li><strong>5:00-6:00 PM:</strong> Glow-Up Hour (Today's Mission & Movement).</li>
-                    <li><strong>6:00-7:00 PM:</strong> Dinner & Social Connection.</li>
-                    <li><strong>7:00-9:00 PM:</strong> Skills/Learning & Personal Time.</li>
-                    <li><strong>9:00-10:00 PM:</strong> Wind Down, Prepare for Tomorrow, Journal/Reflect.</li>
-                    <li><strong>10:00 PM onwards:</strong> Quality Sleep.</li>
+                    <li><strong>5:30-6:00 AM:</strong> Wake Up & Hydrate, Stretch, Wash Face, Brush Teeth.</li>
+                    <li><strong>6:00-6:30 AM:</strong> Shower, Deodorant, Get Dressed, Fix Hair.</li>
+                    <li><strong>6:30-7:00 AM:</strong> Healthy Breakfast, Pack Bag, Fill Water Bottle.</li>
+                    <li><strong>7:00 AM-3:00 PM:</strong> School Time (Participate, stay hydrated).</li>
+                    <li><strong>3:00-4:00 PM:</strong> Arrive Home, Healthy Snack, Rest (no gadgets).</li>
+                    <li><strong>4:00-5:00 PM:</strong> Glow-Up Hour (Workout + Daily Mission).</li>
+                    <li><strong>5:00-6:30 PM:</strong> Homework & Study.</li>
+                    <li><strong>6:30-8:00 PM:</strong> Dinner & Family Time.</li>
+                    <li><strong>8:00-9:00 PM:</strong> Wind Down (Review notes, pick clothes, read, relax).</li>
+                    <li><strong>9:00-9:30 PM:</strong> Final Prep for Bed (No screens, wash face, brush teeth).</li>
                 </ul>
             `,
             weekend: `
                 <h4 class="font-bold text-lg mb-4 text-slate-700">Weekend Schedule</h4>
-                 <ul class="space-y-3 text-slate-600">
-                    <li><strong>Morning (8 AM-12 PM):</strong> Wake Up, Leisurely Breakfast, Hygiene Routine, Glow-Up Activities & Skill Development.</li>
-                    <li><strong>Afternoon (12 PM-5 PM):</strong> Lunch, Socializing/Hobbies, Environment Organization, Creative Exploration.</li>
-                    <li><strong>Evening (5 PM onwards):</strong> Relax, Dinner, Family/Friend Time, Unwind.</li>
-                    <li class="pt-2 font-semibold text-amber-600"><strong>Sunday Night:</strong> Review your week, plan for the next, and ensure good sleep!</li>
+                <ul class="space-y-3 text-slate-600">
+                    <li><strong>Morning (8 AM-12 PM):</strong> Wake up, Hydrate, Breakfast, Hygiene Routine, Glow-Up Hour (Workout + Mission).</li>
+                    <li><strong>Afternoon (12 PM-5 PM):</strong> Lunch, Household Chores, 1-hour School Review/Project Work, Free Time/Hobbies.</li>
+                    <li><strong>Evening (5 PM onwards):</strong> Relax, Dinner, Family Time.</li>
+                    <li class="pt-2 font-semibold text-amber-600"><strong>Sunday Night:</strong> Do your "Wind Down" routine to prepare for Monday!</li>
                 </ul>
             `
         };
@@ -296,8 +311,9 @@
         }
 
         function renderDashboard() {
-            const currentChallengeDay = AppState.today > TOTAL_DAYS ? TOTAL_DAYS : AppState.today;
-            const taskForToday = dailyTasks.find(t => t.day === currentChallengeDay) || dailyTasks[TOTAL_DAYS - 1]; 
+            const currentChallengeDay = AppState.today > TOTAL_CHALLENGE_DAYS ? TOTAL_CHALLENGE_DAYS : AppState.today;
+            
+            const taskForToday = dailyTasks.find(t => t.day === currentChallengeDay) || dailyTasks[dailyTasks.length - 1];
             
             document.getElementById('today-day').textContent = currentChallengeDay;
             document.getElementById('today-task').textContent = taskForToday.task;
@@ -309,7 +325,7 @@
                 completeBtn.classList.add('bg-green-500', 'hover:bg-green-500');
                 completeBtn.classList.remove('bg-amber-500', 'hover:bg-amber-600');
             } else {
-                 completeBtn.textContent = 'Mark as Complete';
+                completeBtn.textContent = 'Mark as Complete';
                 completeBtn.disabled = false;
                 completeBtn.classList.remove('bg-green-500', 'hover:bg-green-500');
                 completeBtn.classList.add('bg-amber-500', 'hover:bg-amber-600');
@@ -320,31 +336,32 @@
         function renderCalendar() {
             const grid = document.getElementById('calendar-grid');
             grid.innerHTML = '';
-            for(let i = 1; i <= TOTAL_DAYS; i++) {
+            dailyTasks.forEach(task => {
                 const dayEl = document.createElement('div');
-                dayEl.dataset.day = i;
+                dayEl.dataset.day = task.day;
                 dayEl.className = 'day-cell h-20 sm:h-24 flex items-center justify-center font-bold text-xl rounded-lg cursor-pointer transition-all duration-300';
-                dayEl.textContent = i;
+                dayEl.textContent = task.day;
                 
                 let baseClasses = 'bg-white shadow-md hover:shadow-xl hover:-translate-y-1';
                 
-                if (AppState.completedDays.has(i)) {
+                if (AppState.completedDays.has(task.day)) {
                     baseClasses = 'bg-green-100 text-green-700 shadow-sm';
                 }
                 
-                if (i === AppState.today) {
+                if (task.day === AppState.today) {
                     baseClasses += ' ring-2 ring-amber-500';
                 }
+                
                 dayEl.classList.add(...baseClasses.split(' '));
+                
                 grid.appendChild(dayEl);
-            }
+            });
         }
         
         function renderPillars() {
             const grid = document.getElementById('pillars-grid');
             grid.innerHTML = '';
-            // Use Object.values to iterate through pillarInfo
-            Object.values(pillarInfo).forEach(pillar => {
+            pillarsData.forEach(pillar => {
                 grid.innerHTML += `
                     <div class="pillar-card bg-white p-6 rounded-2xl shadow-lg cursor-pointer hover:shadow-xl transition-shadow relative">
                         <div class="flex items-center mb-3">
@@ -359,6 +376,29 @@
             document.querySelectorAll('.pillar-card').forEach(card => {
                 card.addEventListener('click', () => {
                     card.querySelector('.pillar-content').classList.toggle('hidden');
+                    card.classList.toggle('expanded');
+                });
+            });
+        }
+
+        function renderSkills() {
+            const grid = document.getElementById('skills-grid');
+            grid.innerHTML = '';
+            skillsData.forEach(skill => {
+                grid.innerHTML += `
+                    <div class="skill-card bg-white p-6 rounded-2xl shadow-lg cursor-pointer hover:shadow-xl transition-shadow relative">
+                        <div class="flex items-center mb-3">
+                            <span class="text-3xl mr-4">${skill.icon}</span>
+                            <h4 class="font-bold text-xl text-slate-800">${skill.title}</h4>
+                        </div>
+                        <p class="skill-content text-slate-600 hidden">${skill.content}</p>
+                        <span class="expand-toggle-icon">▼</span>
+                    </div>
+                `;
+            });
+            document.querySelectorAll('.skill-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    card.querySelector('.skill-content').classList.toggle('hidden');
                     card.classList.toggle('expanded');
                 });
             });
@@ -385,13 +425,17 @@
         function renderProgressChart() {
             const ctx = document.getElementById('progressChart').getContext('2d');
             const completedCount = AppState.completedDays.size;
-            const remainingCount = TOTAL_DAYS - completedCount;
+            const totalDays = TOTAL_CHALLENGE_DAYS;
+            const remainingCount = totalDays - completedCount;
 
             const data = {
                 labels: ['Completed', 'Remaining'],
                 datasets: [{
                     data: [completedCount, remainingCount],
-                    backgroundColor: ['#10b981', '#e5e7eb'],
+                    backgroundColor: [
+                        '#10b981',
+                        '#e5e7eb'
+                    ],
                     borderColor: '#f8f7f4',
                     borderWidth: 4,
                     hoverOffset: 4
@@ -399,18 +443,18 @@
             };
 
             let progressMessage = '';
-            if (completedCount === TOTAL_DAYS) {
+            if (completedCount === totalDays) {
                 progressMessage = "🎉 Challenge Completed! You're amazing!";
-            } else if (completedCount >= TOTAL_DAYS / 2) {
-                progressMessage = `Halfway there! Keep glowing! (${completedCount}/${TOTAL_DAYS})`;
+            } else if (completedCount >= totalDays / 2) {
+                progressMessage = `Halfway there! Keep glowing! (${completedCount}/${totalDays})`;
             } else if (completedCount > 0) {
-                progressMessage = `You're on your way! (${completedCount}/${TOTAL_DAYS})`;
+                progressMessage = `You're on your way! (${completedCount}/${totalDays})`;
             } else {
-                progressMessage = `Start your journey today! (${completedCount}/${TOTAL_DAYS})`;
+                progressMessage = `Start your journey today! (${completedCount}/${totalDays})`;
             }
             document.getElementById('progress-message').textContent = progressMessage;
 
-            const chartTitle = `${completedCount} of ${TOTAL_DAYS} Days Complete`;
+            const chartTitle = `${completedCount} of ${totalDays} Days Complete`;
 
             if(progressChartInstance) {
                 progressChartInstance.data.datasets[0].data = [completedCount, remainingCount];
@@ -421,10 +465,25 @@
                     type: 'doughnut',
                     data: data,
                     options: {
-                        responsive: true, maintainAspectRatio: false, cutout: '70%',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '70%',
                         plugins: {
-                            legend: { display: false }, tooltip: { enabled: true },
-                            title: { display: true, text: chartTitle, font: { size: 16, weight: 'bold' }, color: '#334155' }
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                enabled: true
+                            },
+                            title: {
+                                display: true,
+                                text: chartTitle,
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                },
+                                color: '#334155'
+                            }
                         }
                     }
                 });
@@ -466,7 +525,7 @@
             }
 
             const todayActual = new Date();
-            todayActual.setHours(0, 0, 0, 0); 
+            todayActual.setHours(0, 0, 0, 0);
             const todayFormatted = formatDate(todayActual);
 
             if (!AppState.startDate) {
@@ -477,6 +536,7 @@
 
             const diffTime = Math.abs(todayActual.getTime() - AppState.startDate.getTime());
             const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
             AppState.today = diffDays + 1;
 
             if (AppState.lastVisitDate !== todayFormatted) {
@@ -512,11 +572,11 @@
             });
             
             document.getElementById('close-modal-btn').addEventListener('click', () => {
-                 document.getElementById('task-modal').classList.add('hidden');
+                document.getElementById('task-modal').classList.add('hidden');
             });
             document.getElementById('task-modal').addEventListener('click', (e) => {
                 if (e.target.id === 'task-modal') {
-                     document.getElementById('task-modal').classList.add('hidden');
+                    document.getElementById('task-modal').classList.add('hidden');
                 }
             });
 
@@ -526,9 +586,9 @@
             document.getElementById('complete-today-btn').addEventListener('click', () => {
                 const currentChallengeDay = AppState.today;
 
-                if (currentChallengeDay > TOTAL_DAYS) {
-                     showMessage('All ' + TOTAL_DAYS + ' days are complete! You are amazing!');
-                     return;
+                if (currentChallengeDay > TOTAL_CHALLENGE_DAYS) {
+                    showMessage(`All ${TOTAL_CHALLENGE_DAYS} days are complete! You are amazing!`);
+                    return;
                 }
 
                 if (!AppState.completedDays.has(currentChallengeDay)) {
@@ -544,7 +604,8 @@
 
             renderDashboard();
             renderCalendar();
-            renderPillars(); 
+            renderPillars();
+            renderSkills(); // Render the new skills section
             renderSchedule('weekday');
         });
     </script>
