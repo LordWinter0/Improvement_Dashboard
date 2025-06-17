@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>90-Day Glow-Up Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f7f4;
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .nav-link.active {
+            color: #f59e0b;
+            border-bottom: 2px solid #f59e0b;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 350px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .pillar-content.hidden, .skill-content-wrapper.hidden {
+            display: none;
+        }
+        .pillar-card, .skill-card {
+            position: relative;
+        }
+        /* Adjusted positioning for the toggle icon for better grouping */
+        .expand-toggle-icon {
+            font-size: 1.5rem;
+            color: #f59e0b;
+            transition: transform 0.3s ease;
+        }
+        .pillar-card.expanded .expand-toggle-icon,
+        .skill-card.expanded .expand-toggle-icon {
+            transform: rotate(180deg);
+        }
+        .progress-message {
+            margin-top: 1rem;
+            font-size: 1.125rem;
+            font-weight: 500;
+            color: #475569;
+        }
+        .skill-task {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #fefce8; /* Amber-50 */
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .skill-task.completed {
+            background-color: #d1fae5; /* Green-100 */
+            color: #065f46; /* Green-800 */
+            text-decoration: line-through;
+        }
+        .skill-task-btn {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: 0.375rem;
+            transition: all 0.2s ease;
+        }
+        .skill-task-btn:not(:disabled) {
+            background-color: #fcd34d; /* Amber-300 */
+            color: #78350f; /* Amber-900 */
+        }
+        .skill-task-btn:not(:disabled):hover {
+            background-color: #fbbf24; /* Amber-400 */
+        }
+        .skill-task-btn:disabled {
+            background-color: #a7f3d0; /* Green-200 */
+            color: #065f46; /* Green-800 */
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body class="text-slate-700">
+
+    <div id="app" class="max-w-7xl mx-auto p-4 md:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-slate-800">Your 90-Day Glow-Up</h1>
+            <p class="mt-2 text-lg text-slate-500">A complete guide to a more confident you.</p>
+        </header>
+
+        <nav class="flex justify-center border-b border-slate-200 mb-8 space-x-4 sm:space-x-8">
+            <a data-view="dashboard" class="nav-link active py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">Dashboard</a>
+            <a data-view="plan" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">90-Day Plan</a>
+            <a data-view="pillars" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">The Pillars</a>
+            <a data-view="skills" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">Skills</a>
+            <a data-view="schedule" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">Daily Schedule</a>
+        </nav>
+
+        <main>
+            <section id="dashboard" class="view">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-slate-800 mb-2">Welcome! Here's your focus for today.</h2>
+                    <p class="text-slate-500">Consistency is your superpower. Let's make today count!</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="md:col-span-2 bg-white p-6 rounded-2xl shadow-lg">
+                        <h3 class="font-bold text-xl text-slate-800 mb-4">✨ Today's Mission (Day <span id="today-day"></span>)</h3>
+                        <p id="today-task" class="text-lg text-slate-600 leading-relaxed"></p>
+                        <button id="complete-today-btn" class="mt-6 bg-amber-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-amber-600 transition-colors">Mark as Complete</button>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-lg">
+                        <h3 class="font-bold text-xl text-slate-800 mb-4">📊 Progress Tracker</h3>
+                        <div class="chart-container">
+                            <canvas id="progressChart"></canvas>
+                        </div>
+                        <p id="progress-message" class="progress-message text-center"></p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="plan" class="view hidden">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-slate-800 mb-2">Your 90-Day Calendar</h2>
+                    <p class="text-slate-500">Click on any day to see your mission. Today is highlighted for you!</p>
+                </div>
+                <div id="calendar-grid" class="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-4">
+                </div>
+            </section>
+
+            <section id="pillars" class="view hidden">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-slate-800 mb-2">The Six Pillars of Your Glow-Up</h2>
+                    <p class="text-slate-500">These are the core principles behind your daily actions. Click each one to learn more.</p>
+                </div>
+                <div id="pillars-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                </div>
+            </section>
+
+            <section id="skills" class="view hidden">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-slate-800 mb-2">Level Up Your Skills!</h2>
+                    <p class="text-slate-500">Explore new interests and develop valuable abilities. Click each skill area to get started!</p>
+                </div>
+                <div id="skills-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                </div>
+            </section>
+
+            <section id="schedule" class="view hidden">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-slate-800 mb-2">Your Daily Blueprint</h2>
+                    <p class="text-slate-500">A template for success. Use this to structure your days.</p>
+                </div>
+                <div class="flex justify-center mb-6">
+                    <button id="weekday-btn" class="schedule-btn bg-amber-500 text-white py-2 px-6 rounded-l-lg font-semibold">Weekday</button>
+                    <button id="weekend-btn" class="schedule-btn bg-slate-200 text-slate-600 py-2 px-6 rounded-r-lg font-semibold">Weekend</button>
+                </div>
+                <div id="schedule-content" class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg max-w-4xl mx-auto">
+                </div>
+            </section>
+        </main>
+
+    </div>
+
+    <div id="task-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full">
+            <h3 class="font-bold text-2xl text-slate-800 mb-4">Day <span id="modal-day"></span> Mission</h3>
+            <p id="modal-task" class="text-slate-600 mb-6"></p>
+            <button id="close-modal-btn" class="w-full bg-slate-200 text-slate-700 font-bold py-2 px-4 rounded-lg hover:bg-slate-300 transition-colors">Close</button>
+        </div>
+    </div>
+    
+    <div id="message-box" class="fixed bottom-5 right-5 bg-green-500 text-white py-3 px-5 rounded-lg shadow-xl transform translate-y-20 opacity-0 transition-all duration-500">
+        Task marked as complete!
+    </div>
+
+    <script>
+        const TOTAL_CHALLENGE_DAYS = 90;
+
+        const AppState = {
+            currentView: 'dashboard',
+            today: 1,
+            completedDays: new Set(),
+            completedSkillTasks: {}, // New: Stores completed skill tasks, e.g., { 'coding': [0, 2], 'gaming': [1] }
+            startDate: null,
+            lastVisitDate: null
+        };
+
+        const dailyTasks = Array.from({ length: TOTAL_CHALLENGE_DAYS }, (_, i) => {
+            const day = i + 1;
+            let pillar, task;
+
+            if (day <= 30) {
+                switch (day % 10) {
+                    case 1: pillar = 'Mind'; task = "Goal Setting & Hydration: Write down your goals. Track water intake."; break;
+                    case 2: pillar = 'Skin'; task = "Simple Cleansing: Gentle face wash morning and night."; break;
+                    case 3: pillar = 'Body'; task = "Mindful Movement: 20-minute walk or in-place exercise."; break;
+                    case 4: pillar = 'Mind'; task = "Study Space Overhaul: Organize your desk and study area."; break;
+                    case 5: pillar = 'Nourish'; task = "Fruit Focus: Try a new fruit as a snack."; break;
+                    case 6: pillar = 'Nourish'; task = "Healthy Swap: Swap one sugary drink for water."; break;
+                    case 7: pillar = 'Mind'; task = "Reflection & Relaxation: Review your week. Listen to music or read."; break;
+                    case 8: pillar = 'Body'; task = "Workout Fun: 15-minute dance workout."; break;
+                    case 9: pillar = 'Mind'; task = "Active Learning: Summarize a chapter in your own words."; break;
+                    case 0: pillar = 'Body'; task = "Strength Starter: 2 sets of 10 squats, 20-second plank."; break;
+                    default: pillar = 'Mind'; task = "Daily check-in: How are you feeling today?"; break;
+                }
+                if (day === 11) { pillar = 'Hygiene'; task = "Hygiene Refresh: Clean toothbrush. Wear fresh clothes."; }
+                if (day === 12) { pillar = 'Style'; task = "Style Fun: Try a new, simple hairstyle."; }
+                if (day === 13) { pillar = 'Nourish'; task = "Snack Smart: Choose fruit over chips/candy."; }
+                if (day === 14) { pillar = 'Mind'; task = "Mid-Point Check-in: Notice any changes? Pat yourself on the back!"; }
+                if (day === 15) { pillar = 'Nourish'; task = "Breakfast Boost: Start with a banana or fruit."; }
+                if (day === 16) { pillar = 'Mind'; task = "Brain Boost: 20 minutes reading for fun."; }
+                if (day === 17) { pillar = 'Body'; task = "Cardio Challenge: 3 sets of 30 jumping jacks."; }
+                if (day === 18) { pillar = 'Style'; task = "Closet Cleanse: Organize favorite outfits."; }
+                if (day === 19) { pillar = 'Mind'; task = "Gratitude Practice: Think of one good thing today."; }
+                if (day === 20) { pillar = 'Skin'; task = "Self-Care Simple: Relaxing bath/shower, gentle skin scrub."; }
+                if (day === 21) { pillar = 'Body'; task = "Outdoor Time: 15 minutes outside (not midday sun)."; }
+                if (day === 22) { pillar = 'Nourish'; task = "Kitchen Helper: Help with family meal prep."; }
+                if (day === 23) { pillar = 'Mind'; task = "Focus Power: Try Pomodoro Technique for homework."; }
+                if (day === 24) { pillar = 'Body'; task = "Full-Body Flow: 20-min routine: jumping jacks, squats, push-ups, plank."; }
+                if (day === 25) { pillar = 'Hygiene'; task = "Scent-sational Self-Care: Daily deodorant. Baby powder for freshness."; }
+                if (day === 26) { pillar = 'Style'; task = "Outfit of the Day: Pick your favorite clean outfit, wear with confidence."; }
+                if (day === 27) { pillar = 'Mind'; task = "Mindful Morning: 5 minutes quiet stretching."; }
+                if (day === 28) { pillar = 'Mind'; task = "Knowledge is Power: Watch an interesting educational video."; }
+                if (day === 29) { pillar = 'Style'; task = "Confidence Boost: Stand straight, shoulders back, smile in mirror."; }
+                if (day === 30) { pillar = 'Mind'; task = "Celebrate You! Look back at Day 1. Be proud of your consistency!"; }
+            } else if (day <= 60) {
+                switch (day % 10) {
+                    case 1: pillar = 'Nourish'; task = "Balanced Meal: Include a protein, veggie, and carb in one meal."; break;
+                    case 2: pillar = 'Body'; task = "Core Strength: Try 3 sets of 15 crunches."; break;
+                    case 3: pillar = 'Skin'; task = "Exfoliation Intro: Gently exfoliate face (once this week)."; break;
+                    case 4: pillar = 'Hygiene'; task = "Oral Care: Add mouthwash to your routine."; break;
+                    case 5: pillar = 'Mind'; task = "Journaling: Write 3 things you're grateful for."; break;
+                    case 6: pillar = 'Style'; task = "Color Pop: Wear an item with a color you love."; break;
+                    case 7: pillar = 'Nourish'; task = "Hydration Challenge: Drink an extra glass of water."; break;
+                    case 8: pillar = 'Body'; task = "Active Chores: Help with active chores like sweeping or gardening for 20 min."; break;
+                    case 9: pillar = 'Mind'; task = "New Skill Mini-Lesson: Watch a short tutorial on something new (e.g., drawing, simple coding)."; break;
+                    case 0: pillar = 'Skin'; task = "Moisturize! Apply moisturizer after washing your face."; break;
+                    default: pillar = 'Mind'; task = "Discover a new educational podcast or channel."; break;
+                }
+                if (day === 35) { pillar = 'Mind'; task = "Mindful Breathing: Practice 5 minutes of deep breathing exercises."; }
+                if (day === 45) { pillar = 'Body'; task = "Flexibility Focus: Spend 10 minutes stretching your major muscle groups."; }
+                if (day === 50) { pillar = 'Nourish'; task = "Healthy Snack Prep: Prepare some healthy snacks for the next few days."; }
+                if (day === 55) { pillar = 'Style'; task = "Accessories Experiment: Try adding a simple accessory like a watch or a bracelet."; }
+                if (day === 59) { pillar = 'Mind'; task = "Future Planning: Jot down some ideas for after the 90-day challenge."; }
+                if (day === 60) { pillar = 'Mind'; task = "60-Day Review: Reflect on progress, celebrate consistency. You're doing great!"; }
+
+            } else {
+                switch (day % 10) {
+                    case 1: pillar = 'Nourish'; task = "Cook a Simple Dish: Help prepare a main dish for your family."; break;
+                    case 2: pillar = 'Body'; task = "Incorporate Stairs: Take the stairs instead of the elevator/escalator today."; break;
+                    case 3: pillar = 'Skin'; task = "Sun Protection Awareness: Learn about SPF and why it's important."; break;
+                    case 4: pillar = 'Hygiene'; task = "Laundry Day: Help with laundry, especially your own clothes."; break;
+                    case 5: pillar = 'Mind'; task = "Digital Detox: Spend 1 hour away from screens before bed."; break;
+                    case 6: pillar = 'Style'; task = "Outfit Planning: Plan outfits for the entire week ahead."; break;
+                    case 7: pillar = 'Body'; task = "Interval Training: Try short bursts of high-intensity activity during your walk."; break;
+                    case 8: pillar = 'Nourish'; task = "Smoothie Experiment: Create your own healthy smoothie recipe."; break;
+                    case 9: pillar = 'Mind'; task = "Problem Solving: Tackle a challenging puzzle or brain teaser."; break;
+                    case 0: pillar = 'Hygiene'; task = "Clean Your Space: Dedicate 30 minutes to tidying your room."; break;
+                    default: pillar = 'Mind'; task = "Read an article or watch a documentary on a topic you're curious about."; break;
+                }
+                if (day === 75) { pillar = 'Mind'; task = "Goal Refinement: Revisit your initial goals. How have they evolved?"; }
+                if (day === 80) { pillar = 'Body'; task = "Challenge Yourself: Try a longer workout or a new physical activity."; }
+                if (day === 85) { pillar = 'Skin'; task = "Identify Skin Type: Do a simple test to understand your skin type (oily, dry, combo)."; }
+                if (day === 89) { pillar = 'Mind'; task = "Vision Board: Create a small vision board for your future self."; }
+                if (day === 90) { pillar = 'Mind'; task = "Final Celebration! You've completed 90 days! Acknowledge your incredible transformation and plan for continued growth!"; }
+            }
+            return { day, pillar, task };
+        });
+
+        const pillarsData = [
+            { id: 'nourish', icon: '🍎', title: 'Nourish Your Body', content: "Fuel your body for energy and health. Focus on fruits (2-3 servings daily), 'hidden' veggies in dishes like lumpia or spaghetti sauce, and drink 6-8 glasses of water. A smoothie with banana and malunggay is a great nutrient boost." },
+            { id: 'body', icon: '💪', title: 'Move Your Body', content: "Get stronger and boost your mood without a gym. Aim for 30 minutes of movement 5 days a week. Combine 15-20 mins of cardio (dancing, jumping jacks) with 10-15 mins of strength (squats, planks, push-ups)." },
+            { id: 'skin', icon: '✨', title: 'Radiant Skin', content: "Achieve clean, healthy skin with a simple routine. Your #1 priority is cleansing your face gently with mild soap and water every morning and night. For sun protection, seek shade, wear a cap, or use an umbrella, especially from 10 AM to 4 PM." },
+            { id: 'hygiene', icon: '💧', title: 'Impeccable Hygiene', content: "Feel and smell fresh all day. Key habits include daily showers (especially after exercise), brushing your teeth twice a day, using deodorant every morning, and wearing completely fresh, clean clothes every day." },
+            { id: 'mind', icon: '🧠', title: 'Sharpen Your Mind', content: "Make learning more effective. Keep a dedicated, organized study space. Use the Pomodoro Technique (25 mins focus, 5 mins break) to avoid burnout. Review your notes for 15 minutes each evening to retain information." },
+            { id: 'style', icon: '👕', title: 'Cultivate Your Style', content: "Express yourself and feel confident. Use Pinterest for inspiration. Master the basics like well-fitting jeans and clean t-shirts. A simple outfit looks great with neat hair and good posture. Pick out your clothes the night before." }
+        ];
+
+        const skillsData = [
+            {
+                id: 'coding', icon: '💻', title: 'Coding & Digital', content: 'Learn the fundamentals of coding and digital literacy. Start with visual programming and gradually move to text-based languages.', tasks: [
+                    "Explore a 'Hello World' tutorial in Scratch or Python.",
+                    "Learn basic HTML tags (e.g., `<p>`, `<h1>`, `<a>`).",
+                    "Understand how to save and open a simple text file.",
+                    "Practice basic touch typing for 15 minutes.",
+                    "Watch a short video on internet safety and privacy.",
+                    "Attempt a simple coding challenge (e.g., make a variable count to 10).",
+                    "Create a very basic webpage with your name and favorite color.",
+                    "Learn about keyboard shortcuts for copying and pasting.",
+                    "Explore a coding game or puzzle website (e.g., Code.org, Lightbot).",
+                    "Understand what an algorithm is with a real-world example (e.g., making a sandwich)."
+                ]
+            },
+            {
+                id: 'creative', icon: '🎨', title: 'Creative Arts', content: 'Unleash your creativity through various artistic expressions. No prior experience needed!', tasks: [
+                    "Draw 5 simple shapes from observation (e.g., a cup, a book).",
+                    "Listen to a new music genre for 15 minutes.",
+                    "Write a short paragraph describing your favorite place.",
+                    "Experiment with drawing using only circles and squares.",
+                    "Learn 3 basic chords on a guitar or ukulele (if available).",
+                    "Try a simple origami fold from an online tutorial.",
+                    "Sketch a self-portrait (doesn't have to be perfect!).",
+                    "Create a collage using old magazines or printed images.",
+                    "Listen actively to a piece of classical music and identify instruments.",
+                    "Write a short, rhyming poem about nature."
+                ]
+            },
+            {
+                id: 'gaming', icon: '🎮', title: 'Gaming & Hobbies', content: 'Beyond just playing, learn about game design, strategy, and responsible gaming. Discover new hobbies!', tasks: [
+                    "Play a strategy game for 30 minutes, focusing on decision-making.",
+                    "Set a timer for your gaming session and stick to it.",
+                    "Explore a new board game or card game with family/friends.",
+                    "Learn about the history or development of your favorite game genre.",
+                    "Try a logic puzzle (Sudoku, crossword) instead of a screen.",
+                    "Organize your gaming space or hobby supplies.",
+                    "Watch a tutorial on improving your skills in a specific game.",
+                    "Research a new hobby you'd like to try (e.g., bird watching, model building).",
+                    "Engage in positive discussion about a game/hobby online (avoiding toxicity).",
+                    "Teach someone else a simple game or hobby you enjoy."
+                ]
+            },
+            {
+                id: 'life-skills', icon: '🛠️', title: 'Practical Life Skills', content: 'Master essential life skills that will make you more independent and capable.', tasks: [
+                    "Make your bed perfectly in under 5 minutes.",
+                    "Learn how to properly wash dishes by hand.",
+                    "Prepare a simple healthy snack (e.g., fruit salad).",
+                    "Sort your laundry by color (lights and darks).",
+                    "Learn how to tie a basic knot (e.g., square knot).",
+                    "Help clean a bathroom or kitchen counter thoroughly.",
+                    "Prepare a simple packed lunch for yourself.",
+                    "Learn to read a bus schedule or simple map.",
+                    "Fix a loose button on a shirt (ask for help if needed).",
+                    "Write a thank-you note to someone who helped you."
+                ]
+            }
+        ];
+
+        const schedulesData = {
+            weekday: `
+                <h4 class="font-bold text-lg mb-4 text-slate-700">Weekday Schedule</h4>
+                <ul class="space-y-3 text-slate-600">
+                    <li><strong>5:30-6:00 AM:</strong> Wake Up & Hydrate, Stretch, Wash Face, Brush Teeth.</li>
+                    <li><strong>6:00-6:30 AM:</strong> Shower, Deodorant, Get Dressed, Fix Hair.</li>
+                    <li><strong>6:30-7:00 AM:</strong> Healthy Breakfast, Pack Bag, Fill Water Bottle.</li>
+                    <li><strong>7:00 AM-3:00 PM:</strong> School Time (Participate, stay hydrated).</li>
+                    <li><strong>3:00-4:00 PM:</strong> Arrive Home, Healthy Snack, Rest (no gadgets).</li>
+                    <li><strong>4:00-5:00 PM:</strong> Glow-Up Hour (Workout + Daily Mission).</li>
+                    <li><strong>5:00-6:30 PM:</strong> Homework & Study.</li>
+                    <li><strong>6:30-8:00 PM:</strong> Dinner & Family Time.</li>
+                    <li><strong>8:00-9:00 PM:</strong> Wind Down (Review notes, pick clothes, read, relax).</li>
+                    <li><strong>9:00-9:30 PM:</strong> Final Prep for Bed (No screens, wash face, brush teeth).</li>
+                </ul>
+            `,
+            weekend: `
+                <h4 class="font-bold text-lg mb-4 text-slate-700">Weekend Schedule</h4>
+                <ul class="space-y-3 text-slate-600">
+                    <li><strong>Morning (8 AM-12 PM):</strong> Wake up, Hydrate, Breakfast, Hygiene Routine, Glow-Up Hour (Workout + Mission).</li>
+                    <li><strong>Afternoon (12 PM-5 PM):</strong> Lunch, Household Chores, 1-hour School Review/Project Work, Free Time/Hobbies.</li>
+                    <li><strong>Evening (5 PM onwards):</strong> Relax, Dinner, Family Time.</li>
+                    <li class="pt-2 font-semibold text-amber-600"><strong>Sunday Night:</strong> Do your "Wind Down" routine to prepare for Monday!</li>
+                </ul>
+            `
+        };
+        
+        let progressChartInstance = null;
+        
+        function updateView(viewName) {
+            document.querySelectorAll('.view').forEach(view => view.classList.add('hidden'));
+            document.getElementById(viewName).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.dataset.view === viewName) {
+                    link.classList.add('active');
+                }
+            });
+            AppState.currentView = viewName;
+        }
+
+        function renderDashboard() {
+            const currentChallengeDay = AppState.today > TOTAL_CHALLENGE_DAYS ? TOTAL_CHALLENGE_DAYS : AppState.today;
+            
+            const taskForToday = dailyTasks.find(t => t.day === currentChallengeDay) || dailyTasks[dailyTasks.length - 1];
+            
+            document.getElementById('today-day').textContent = currentChallengeDay;
+            document.getElementById('today-task').textContent = taskForToday.task;
+
+            const completeBtn = document.getElementById('complete-today-btn');
+            if (AppState.completedDays.has(currentChallengeDay)) {
+                completeBtn.textContent = 'Completed!';
+                completeBtn.disabled = true;
+                completeBtn.classList.add('bg-green-500', 'hover:bg-green-500');
+                completeBtn.classList.remove('bg-amber-500', 'hover:bg-amber-600');
+            } else {
+                completeBtn.textContent = 'Mark as Complete';
+                completeBtn.disabled = false;
+                completeBtn.classList.remove('bg-green-500', 'hover:bg-green-500');
+                completeBtn.classList.add('bg-amber-500', 'hover:bg-amber-600');
+            }
+            renderProgressChart();
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendar-grid');
+            grid.innerHTML = '';
+            dailyTasks.forEach(task => {
+                const dayEl = document.createElement('div');
+                dayEl.dataset.day = task.day;
+                dayEl.className = 'day-cell h-20 sm:h-24 flex items-center justify-center font-bold text-xl rounded-lg cursor-pointer transition-all duration-300';
+                dayEl.textContent = task.day;
+                
+                let baseClasses = 'bg-white shadow-md hover:shadow-xl hover:-translate-y-1';
+                
+                if (AppState.completedDays.has(task.day)) {
+                    baseClasses = 'bg-green-100 text-green-700 shadow-sm';
+                }
+                
+                if (task.day === AppState.today) {
+                    baseClasses += ' ring-2 ring-amber-500';
+                }
+                
+                dayEl.classList.add(...baseClasses.split(' '));
+                
+                grid.appendChild(dayEl);
+            });
+        }
+        
+        function renderPillars() {
+            const grid = document.getElementById('pillars-grid');
+            grid.innerHTML = '';
+            pillarsData.forEach(pillar => {
+                grid.innerHTML += `
+                    <div class="pillar-card bg-white p-6 rounded-2xl shadow-lg cursor-pointer hover:shadow-xl transition-shadow relative">
+                        <div class="flex items-center mb-3">
+                            <span class="text-3xl mr-4">${pillar.icon}</span>
+                            <h4 class="font-bold text-xl text-slate-800">${pillar.title}</h4>
+                        </div>
+                        <p class="pillar-content text-slate-600 hidden">${pillar.content}</p>
+                        <span class="expand-toggle-icon">▼</span>
+                    </div>
+                `;
+            });
+            document.querySelectorAll('.pillar-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    card.querySelector('.pillar-content').classList.toggle('hidden');
+                    card.classList.toggle('expanded');
+                });
+            });
+        }
+
+        function renderSkills() {
+            const grid = document.getElementById('skills-grid');
+            grid.innerHTML = '';
+            skillsData.forEach(skill => {
+                const completedTasks = AppState.completedSkillTasks[skill.id] || [];
+                const progress = skill.tasks.length > 0 ? Math.round((completedTasks.length / skill.tasks.length) * 100) : 0;
+
+                let tasksHtml = skill.tasks.map((taskText, index) => {
+                    const isCompleted = completedTasks.includes(index);
+                    return `
+                        <div class="skill-task ${isCompleted ? 'completed' : ''}">
+                            <span class="text-slate-700 ${isCompleted ? 'text-green-800' : ''}">${taskText}</span>
+                            <button data-skill-id="${skill.id}" data-task-index="${index}" class="skill-task-btn" ${isCompleted ? 'disabled' : ''}>
+                                ${isCompleted ? 'Done' : 'Mark Done'}
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+
+                grid.innerHTML += `
+                    <div class="skill-card bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow relative">
+                        <div class="flex items-center mb-3 cursor-pointer" data-toggle="skill-card-toggle">
+                            <span class="text-3xl mr-4">${skill.icon}</span>
+                            <h4 class="font-bold text-xl text-slate-800">${skill.title}</h4>
+                            <span class="expand-toggle-icon ml-auto">▼</span>
+                        </div>
+                        
+                        <div class="skill-content-wrapper hidden">
+                            <p class="text-slate-600 mb-4">${skill.content}</p>
+                            <h5 class="font-semibold text-lg text-slate-700 mb-2">Tasks:</h5>
+                            <div class="space-y-2">
+                                ${tasksHtml}
+                            </div>
+                            <p class="mt-4 text-sm font-medium text-slate-600">Progress: <span class="font-bold text-amber-600">${progress}%</span> of tasks completed for this skill.</p>
+                            <div class="w-full bg-slate-200 rounded-full h-2.5 mt-2">
+                                <div class="bg-amber-500 h-2.5 rounded-full" style="width: ${progress}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.querySelectorAll('.skill-card').forEach(card => {
+                // Target the specific toggle element within THIS card
+                const toggleElement = card.querySelector('[data-toggle="skill-card-toggle"]');
+                if (toggleElement) { // Check if the element exists
+                    toggleElement.addEventListener('click', (event) => {
+                        // First, close any currently open skill cards (accordion behavior)
+                        document.querySelectorAll('.skill-card.expanded').forEach(openCard => {
+                            if (openCard !== card) { // Don't close the card that was just clicked
+                                openCard.querySelector('.skill-content-wrapper').classList.add('hidden');
+                                openCard.classList.remove('expanded');
+                            }
+                        });
+
+                        // Then, toggle the clicked card's content
+                        const contentWrapper = card.querySelector('.skill-content-wrapper');
+                        contentWrapper.classList.toggle('hidden');
+                        card.classList.toggle('expanded');
+                    });
+                }
+            });
+
+            document.querySelectorAll('.skill-task-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const skillId = e.target.dataset.skillId;
+                    const taskIndex = parseInt(e.target.dataset.taskIndex);
+
+                    if (!AppState.completedSkillTasks[skillId]) {
+                        AppState.completedSkillTasks[skillId] = [];
+                    }
+
+                    if (!AppState.completedSkillTasks[skillId].includes(taskIndex)) {
+                        AppState.completedSkillTasks[skillId].push(taskIndex);
+                        saveState();
+                        renderSkills(); // Re-render skills to update UI
+                        showMessage(`Task completed for ${skillId}!`);
+                    } else {
+                        showMessage('Task already completed!');
+                    }
+                });
+            });
+        }
+        
+        function renderSchedule(type = 'weekday') {
+            document.getElementById('schedule-content').innerHTML = schedulesData[type];
+            const weekdayBtn = document.getElementById('weekday-btn');
+            const weekendBtn = document.getElementById('weekend-btn');
+
+            if (type === 'weekday') {
+                weekdayBtn.classList.add('bg-amber-500', 'text-white');
+                weekdayBtn.classList.remove('bg-slate-200', 'text-slate-600');
+                weekendBtn.classList.add('bg-slate-200', 'text-slate-600');
+                weekendBtn.classList.remove('bg-amber-500', 'text-white');
+            } else {
+                weekendBtn.classList.add('bg-amber-500', 'text-white');
+                weekendBtn.classList.remove('bg-slate-200', 'text-slate-600');
+                weekdayBtn.classList.add('bg-slate-200', 'text-slate-600');
+                weekdayBtn.classList.remove('bg-amber-500', 'text-white');
+            }
+        }
+
+        function renderProgressChart() {
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            const completedCount = AppState.completedDays.size;
+            const totalDays = TOTAL_CHALLENGE_DAYS;
+            const remainingCount = totalDays - completedCount;
+
+            const data = {
+                labels: ['Completed', 'Remaining'],
+                datasets: [{
+                    data: [completedCount, remainingCount],
+                    backgroundColor: [
+                        '#10b981',
+                        '#e5e7eb'
+                    ],
+                    borderColor: '#f8f7f4',
+                    borderWidth: 4,
+                    hoverOffset: 4
+                }]
+            };
+
+            let progressMessage = '';
+            if (completedCount === totalDays) {
+                progressMessage = "🎉 Challenge Completed! You're amazing!";
+            } else if (completedCount >= totalDays / 2) {
+                progressMessage = `Halfway there! Keep glowing! (${completedCount}/${totalDays})`;
+            } else if (completedCount > 0) {
+                progressMessage = `You're on your way! (${completedCount}/${totalDays})`;
+            } else {
+                progressMessage = `Start your journey today! (${completedCount}/${totalDays})`;
+            }
+            document.getElementById('progress-message').textContent = progressMessage;
+
+            const chartTitle = `${completedCount} of ${totalDays} Days Complete`;
+
+            if(progressChartInstance) {
+                progressChartInstance.data.datasets[0].data = [completedCount, remainingCount];
+                progressChartInstance.options.plugins.title.text = chartTitle;
+                progressChartInstance.update();
+            } else {
+                progressChartInstance = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '70%',
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                enabled: true
+                            },
+                            title: {
+                                display: true,
+                                text: chartTitle,
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                },
+                                color: '#334155'
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        function showModalForDay(dayNumber) {
+            const task = dailyTasks.find(t => t.day == dayNumber);
+            if(task) {
+                document.getElementById('modal-day').textContent = task.day;
+                document.getElementById('modal-task').textContent = task.task;
+                document.getElementById('task-modal').classList.remove('hidden');
+            }
+        }
+        
+        function showMessage(text) {
+            const msgBox = document.getElementById('message-box');
+            msgBox.textContent = text;
+            msgBox.classList.remove('opacity-0', 'translate-y-20');
+            setTimeout(() => {
+                msgBox.classList.add('opacity-0', 'translate-y-20');
+            }, 3000);
+        }
+
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function loadState() {
+            const savedState = localStorage.getItem('glowUpAppState');
+            if (savedState) {
+                const parsedState = JSON.parse(savedState);
+                AppState.completedDays = new Set(parsedState.completedDays || []);
+                AppState.completedSkillTasks = parsedState.completedSkillTasks || {};
+                AppState.startDate = parsedState.startDate ? new Date(parsedState.startDate) : null;
+                AppState.lastVisitDate = parsedState.lastVisitDate || null;
+            }
+
+            const todayActual = new Date();
+            todayActual.setHours(0, 0, 0, 0);
+            const todayFormatted = formatDate(todayActual);
+
+            if (!AppState.startDate) {
+                AppState.startDate = new Date(todayActual);
+                AppState.lastVisitDate = todayFormatted;
+                saveState();
+            }
+
+            const diffTime = Math.abs(todayActual.getTime() - AppState.startDate.getTime());
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+            AppState.today = diffDays + 1;
+
+            if (AppState.lastVisitDate !== todayFormatted) {
+                AppState.lastVisitDate = todayFormatted;
+                saveState();
+            }
+        }
+
+        function saveState() {
+            const stateToSave = {
+                completedDays: Array.from(AppState.completedDays),
+                completedSkillTasks: AppState.completedSkillTasks,
+                startDate: AppState.startDate ? formatDate(AppState.startDate) : null,
+                lastVisitDate: AppState.lastVisitDate
+            };
+            localStorage.setItem('glowUpAppState', JSON.stringify(stateToSave));
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            
+            document.querySelector('nav').addEventListener('click', (e) => {
+                if (e.target.matches('.nav-link')) {
+                    const viewName = e.target.dataset.view;
+                    updateView(viewName);
+                }
+            });
+
+            document.getElementById('calendar-grid').addEventListener('click', (e) => {
+                const dayCell = e.target.closest('.day-cell');
+                if (dayCell) {
+                    showModalForDay(dayCell.dataset.day);
+                }
+            });
+            
+            document.getElementById('close-modal-btn').addEventListener('click', () => {
+                document.getElementById('task-modal').classList.add('hidden');
+            });
+            document.getElementById('task-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'task-modal') {
+                    document.getElementById('task-modal').classList.add('hidden');
+                }
+            });
+
+            document.getElementById('weekday-btn').addEventListener('click', () => renderSchedule('weekday'));
+            document.getElementById('weekend-btn').addEventListener('click', () => renderSchedule('weekend'));
+
+            document.getElementById('complete-today-btn').addEventListener('click', () => {
+                const currentChallengeDay = AppState.today;
+
+                if (currentChallengeDay > TOTAL_CHALLENGE_DAYS) {
+                    showMessage(`All ${TOTAL_CHALLENGE_DAYS} days are complete! You are amazing!`);
+                    return;
+                }
+
+                if (!AppState.completedDays.has(currentChallengeDay)) {
+                    AppState.completedDays.add(currentChallengeDay);
+                    saveState();
+                    renderDashboard();
+                    renderCalendar();
+                    showMessage('Great job! Mission complete!');
+                } else {
+                    showMessage('You' + "'" + 've already completed today' + "'" + 's mission!');
+                }
+            });
+
+            renderDashboard();
+            renderCalendar();
+            renderPillars();
+            renderSkills();
+            renderSchedule('weekday');
+        });
+    </script>
+
+</body>
+</html>
