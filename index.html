@@ -36,7 +36,7 @@
                 height: 350px;
             }
         }
-        .pillar-content.hidden, .skill-content.hidden {
+        .pillar-content.hidden, .skill-content-wrapper.hidden {
             display: none;
         }
         .pillar-card, .skill-card {
@@ -59,6 +59,39 @@
             font-size: 1.125rem;
             font-weight: 500;
             color: #475569;
+        }
+        .skill-task {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #fefce8; /* Amber-50 */
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .skill-task.completed {
+            background-color: #d1fae5; /* Green-100 */
+            color: #065f46; /* Green-800 */
+            text-decoration: line-through;
+        }
+        .skill-task-btn {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: 0.375rem;
+            transition: all 0.2s ease;
+        }
+        .skill-task-btn:not(:disabled) {
+            background-color: #fcd34d; /* Amber-300 */
+            color: #78350f; /* Amber-900 */
+        }
+        .skill-task-btn:not(:disabled):hover {
+            background-color: #fbbf24; /* Amber-400 */
+        }
+        .skill-task-btn:disabled {
+            background-color: #a7f3d0; /* Green-200 */
+            color: #065f46; /* Green-800 */
+            cursor: not-allowed;
         }
     </style>
 </head>
@@ -163,6 +196,7 @@
             currentView: 'dashboard',
             today: 1,
             completedDays: new Set(),
+            completedSkillTasks: {}, // New: Stores completed skill tasks, e.g., { 'coding': [0, 2], 'gaming': [1] }
             startDate: null,
             lastVisitDate: null
         };
@@ -172,7 +206,6 @@
             let pillar, task;
 
             if (day <= 30) {
-                // Original 30-day tasks (examples, expand as needed)
                 switch (day % 10) {
                     case 1: pillar = 'Mind'; task = "Goal Setting & Hydration: Write down your goals. Track water intake."; break;
                     case 2: pillar = 'Skin'; task = "Simple Cleansing: Gentle face wash morning and night."; break;
@@ -207,7 +240,6 @@
                 if (day === 29) { pillar = 'Style'; task = "Confidence Boost: Stand straight, shoulders back, smile in mirror."; }
                 if (day === 30) { pillar = 'Mind'; task = "Celebrate You! Look back at Day 1. Be proud of your consistency!"; }
             } else if (day <= 60) {
-                // Days 31-60: Deeper dive, new habits
                 switch (day % 10) {
                     case 1: pillar = 'Nourish'; task = "Balanced Meal: Include a protein, veggie, and carb in one meal."; break;
                     case 2: pillar = 'Body'; task = "Core Strength: Try 3 sets of 15 crunches."; break;
@@ -229,7 +261,6 @@
                 if (day === 60) { pillar = 'Mind'; task = "60-Day Review: Reflect on progress, celebrate consistency. You're doing great!"; }
 
             } else {
-                // Days 61-90: Solidifying habits, advanced steps, long-term vision
                 switch (day % 10) {
                     case 1: pillar = 'Nourish'; task = "Cook a Simple Dish: Help prepare a main dish for your family."; break;
                     case 2: pillar = 'Body'; task = "Incorporate Stairs: Take the stairs instead of the elevator/escalator today."; break;
@@ -262,10 +293,62 @@
         ];
 
         const skillsData = [
-            { id: 'coding', icon: '💻', title: 'Coding & Digital', content: "Start with basics! Explore free online tutorials for Scratch or Python. Learn simple web development with HTML/CSS. Practice typing skills. Understand online safety and responsible digital citizenship." },
-            { id: 'creative', icon: '🎨', title: 'Creative Arts', content: "Pick up a pen or brush! Try sketching daily for 10 minutes. Experiment with different art styles from online tutorials. Learn basic music theory or a simple song on an instrument. Write short stories or poems." },
-            { id: 'gaming', icon: '🎮', title: 'Gaming & Hobbies', content: "Balance is key! Set screen time limits. Focus on games that challenge your mind or strategy. Explore new hobbies like board games, puzzles, or collecting. Join online communities for shared interests responsibly." },
-            { id: 'life-skills', icon: '🛠️', title: 'Practical Life Skills', content: "Be self-sufficient! Learn basic cooking (e.g., frying an egg, boiling pasta). Practice simple household repairs. Manage a small budget or allowance. Learn how to responsibly use public transportation." }
+            {
+                id: 'coding', icon: '💻', title: 'Coding & Digital', tasks: [
+                    "Explore a 'Hello World' tutorial in Scratch or Python.",
+                    "Learn basic HTML tags (e.g., `<p>`, `<h1>`, `<a>`).",
+                    "Understand how to save and open a simple text file.",
+                    "Practice basic touch typing for 15 minutes.",
+                    "Watch a short video on internet safety and privacy.",
+                    "Attempt a simple coding challenge (e.g., make a variable count to 10).",
+                    "Create a very basic webpage with your name and favorite color.",
+                    "Learn about keyboard shortcuts for copying and pasting.",
+                    "Explore a coding game or puzzle website (e.g., Code.org, Lightbot).",
+                    "Understand what an algorithm is with a real-world example (e.g., making a sandwich)."
+                ]
+            },
+            {
+                id: 'creative', icon: '🎨', title: 'Creative Arts', tasks: [
+                    "Draw 5 simple shapes from observation (e.g., a cup, a book).",
+                    "Listen to a new music genre for 15 minutes.",
+                    "Write a short paragraph describing your favorite place.",
+                    "Experiment with drawing using only circles and squares.",
+                    "Learn 3 basic chords on a guitar or ukulele (if available).",
+                    "Try a simple origami fold from an online tutorial.",
+                    "Sketch a self-portrait (doesn't have to be perfect!).",
+                    "Create a collage using old magazines or printed images.",
+                    "Listen actively to a piece of classical music and identify instruments.",
+                    "Write a short, rhyming poem about nature."
+                ]
+            },
+            {
+                id: 'gaming', icon: '🎮', title: 'Gaming & Hobbies', tasks: [
+                    "Play a strategy game for 30 minutes, focusing on decision-making.",
+                    "Set a timer for your gaming session and stick to it.",
+                    "Explore a new board game or card game with family/friends.",
+                    "Learn about the history or development of your favorite game genre.",
+                    "Try a logic puzzle (Sudoku, crossword) instead of a screen.",
+                    "Organize your gaming space or hobby supplies.",
+                    "Watch a tutorial on improving your skills in a specific game.",
+                    "Research a new hobby you'd like to try (e.g., bird watching, model building).",
+                    "Engage in positive discussion about a game/hobby online (avoiding toxicity).",
+                    "Teach someone else a simple game or hobby you enjoy."
+                ]
+            },
+            {
+                id: 'life-skills', icon: '🛠️', title: 'Practical Life Skills', tasks: [
+                    "Make your bed perfectly in under 5 minutes.",
+                    "Learn how to properly wash dishes by hand.",
+                    "Prepare a simple healthy snack (e.g., fruit salad).",
+                    "Sort your laundry by color (lights and darks).",
+                    "Learn how to tie a basic knot (e.g., square knot).",
+                    "Help clean a bathroom or kitchen counter thoroughly.",
+                    "Prepare a simple packed lunch for yourself.",
+                    "Learn to read a bus schedule or simple map.",
+                    "Fix a loose button on a shirt (ask for help if needed).",
+                    "Write a thank-you note to someone who helped you."
+                ]
+            }
         ];
 
         const schedulesData = {
@@ -385,21 +468,68 @@
             const grid = document.getElementById('skills-grid');
             grid.innerHTML = '';
             skillsData.forEach(skill => {
+                const completedTasks = AppState.completedSkillTasks[skill.id] || [];
+                const progress = skill.tasks.length > 0 ? Math.round((completedTasks.length / skill.tasks.length) * 100) : 0;
+
+                let tasksHtml = skill.tasks.map((taskText, index) => {
+                    const isCompleted = completedTasks.includes(index);
+                    return `
+                        <div class="skill-task ${isCompleted ? 'completed' : ''}">
+                            <span class="text-slate-700 ${isCompleted ? 'text-green-800' : ''}">${taskText}</span>
+                            <button data-skill-id="${skill.id}" data-task-index="${index}" class="skill-task-btn" ${isCompleted ? 'disabled' : ''}>
+                                ${isCompleted ? 'Done' : 'Mark Done'}
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+
                 grid.innerHTML += `
-                    <div class="skill-card bg-white p-6 rounded-2xl shadow-lg cursor-pointer hover:shadow-xl transition-shadow relative">
-                        <div class="flex items-center mb-3">
+                    <div class="skill-card bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow relative">
+                        <div class="flex items-center mb-3 cursor-pointer" data-toggle="skill-content" data-skill-id="${skill.id}">
                             <span class="text-3xl mr-4">${skill.icon}</span>
                             <h4 class="font-bold text-xl text-slate-800">${skill.title}</h4>
                         </div>
-                        <p class="skill-content text-slate-600 hidden">${skill.content}</p>
-                        <span class="expand-toggle-icon">▼</span>
+                        <span class="expand-toggle-icon cursor-pointer" data-toggle="skill-content" data-skill-id="${skill.id}">▼</span>
+                        <div class="skill-content-wrapper hidden">
+                            <p class="text-slate-600 mb-4">${skill.content}</p>
+                            <h5 class="font-semibold text-lg text-slate-700 mb-2">Tasks:</h5>
+                            <div class="space-y-2">
+                                ${tasksHtml}
+                            </div>
+                            <p class="mt-4 text-sm font-medium text-slate-600">Progress: <span class="font-bold text-amber-600">${progress}%</span> of tasks completed for this skill.</p>
+                            <div class="w-full bg-slate-200 rounded-full h-2.5 mt-2">
+                                <div class="bg-amber-500 h-2.5 rounded-full" style="width: ${progress}%"></div>
+                            </div>
+                        </div>
                     </div>
                 `;
             });
+
             document.querySelectorAll('.skill-card').forEach(card => {
-                card.addEventListener('click', () => {
-                    card.querySelector('.skill-content').classList.toggle('hidden');
+                card.querySelector('[data-toggle="skill-content"]').addEventListener('click', (event) => {
+                    const contentWrapper = card.querySelector('.skill-content-wrapper');
+                    contentWrapper.classList.toggle('hidden');
                     card.classList.toggle('expanded');
+                });
+            });
+
+            document.querySelectorAll('.skill-task-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const skillId = e.target.dataset.skillId;
+                    const taskIndex = parseInt(e.target.dataset.taskIndex);
+
+                    if (!AppState.completedSkillTasks[skillId]) {
+                        AppState.completedSkillTasks[skillId] = [];
+                    }
+
+                    if (!AppState.completedSkillTasks[skillId].includes(taskIndex)) {
+                        AppState.completedSkillTasks[skillId].push(taskIndex);
+                        saveState();
+                        renderSkills(); // Re-render skills to update UI
+                        showMessage(`Task completed for ${skillId}!`);
+                    } else {
+                        showMessage('Task already completed!');
+                    }
                 });
             });
         }
@@ -520,6 +650,7 @@
             if (savedState) {
                 const parsedState = JSON.parse(savedState);
                 AppState.completedDays = new Set(parsedState.completedDays || []);
+                AppState.completedSkillTasks = parsedState.completedSkillTasks || {};
                 AppState.startDate = parsedState.startDate ? new Date(parsedState.startDate) : null;
                 AppState.lastVisitDate = parsedState.lastVisitDate || null;
             }
@@ -548,6 +679,7 @@
         function saveState() {
             const stateToSave = {
                 completedDays: Array.from(AppState.completedDays),
+                completedSkillTasks: AppState.completedSkillTasks,
                 startDate: AppState.startDate ? formatDate(AppState.startDate) : null,
                 lastVisitDate: AppState.lastVisitDate
             };
@@ -605,7 +737,7 @@
             renderDashboard();
             renderCalendar();
             renderPillars();
-            renderSkills(); // Render the new skills section
+            renderSkills();
             renderSchedule('weekday');
         });
     </script>
