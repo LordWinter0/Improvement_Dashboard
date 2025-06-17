@@ -346,6 +346,20 @@
                     "Fix a loose button on a shirt (ask for help if needed).",
                     "Write a thank-you note to someone who helped you."
                 ]
+            },
+            { // NEW SKILL ADDED
+                id: 'financial-literacy', icon: '💰', title: 'Financial Literacy', content: 'Gain a basic understanding of money management, saving, and smart spending.', tasks: [
+                    "Identify 3 common expenses in your household.",
+                    "Learn the difference between wants and needs.",
+                    "Create a simple savings goal (e.g., for a new book or small toy).",
+                    "Understand what 'budgeting' means in simple terms.",
+                    "Research how money is earned (e.g., through jobs, allowances).",
+                    "List 3 ways to save money daily.",
+                    "Learn about the concept of 'delayed gratification' (saving now for something better later).",
+                    "Practice counting change accurately.",
+                    "Understand why saving is important for the future.",
+                    "Set up a small piggy bank or savings jar and start putting money in it."
+                ]
             }
         ];
 
@@ -444,18 +458,26 @@
             grid.innerHTML = '';
             pillarsData.forEach(pillar => {
                 grid.innerHTML += `
-                    <div class="pillar-card bg-white p-6 rounded-2xl shadow-lg cursor-pointer hover:shadow-xl transition-shadow relative">
+                    <div class="pillar-card bg-white p-6 rounded-2xl shadow-lg cursor-pointer hover:shadow-xl transition-shadow relative" data-pillar-id="${pillar.id}">
                         <div class="flex items-center mb-3">
                             <span class="text-3xl mr-4">${pillar.icon}</span>
                             <h4 class="font-bold text-xl text-slate-800">${pillar.title}</h4>
                         </div>
                         <p class="pillar-content text-slate-600 hidden">${pillar.content}</p>
-                        <span class="expand-toggle-icon">▼</span>
+                        <span class="expand-toggle-icon absolute top-6 right-6">▼</span>
                     </div>
                 `;
             });
             document.querySelectorAll('.pillar-card').forEach(card => {
                 card.addEventListener('click', () => {
+                    // Close all other open pillar cards first
+                    document.querySelectorAll('.pillar-card.expanded').forEach(openCard => {
+                        if (openCard !== card) { // Don't close the card that was just clicked
+                            openCard.querySelector('.pillar-content').classList.add('hidden');
+                            openCard.classList.remove('expanded');
+                        }
+                    });
+                    // Toggle the clicked card's content
                     card.querySelector('.pillar-content').classList.toggle('hidden');
                     card.classList.toggle('expanded');
                 });
@@ -483,7 +505,7 @@
 
                 grid.innerHTML += `
                     <div class="skill-card bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow relative">
-                        <div class="flex items-center mb-3 cursor-pointer" data-toggle="skill-card-toggle">
+                        <div class="flex items-center mb-3 cursor-pointer skill-header" data-skill-id="${skill.id}">
                             <span class="text-3xl mr-4">${skill.icon}</span>
                             <h4 class="font-bold text-xl text-slate-800">${skill.title}</h4>
                             <span class="expand-toggle-icon ml-auto">▼</span>
@@ -504,25 +526,23 @@
                 `;
             });
 
-            document.querySelectorAll('.skill-card').forEach(card => {
-                // Target the specific toggle element within THIS card
-                const toggleElement = card.querySelector('[data-toggle="skill-card-toggle"]');
-                if (toggleElement) { // Check if the element exists
-                    toggleElement.addEventListener('click', (event) => {
-                        // First, close any currently open skill cards (accordion behavior)
-                        document.querySelectorAll('.skill-card.expanded').forEach(openCard => {
-                            if (openCard !== card) { // Don't close the card that was just clicked
-                                openCard.querySelector('.skill-content-wrapper').classList.add('hidden');
-                                openCard.classList.remove('expanded');
-                            }
-                        });
+            document.querySelectorAll('.skill-card .skill-header').forEach(header => {
+                header.addEventListener('click', (event) => {
+                    const clickedCard = header.closest('.skill-card');
 
-                        // Then, toggle the clicked card's content
-                        const contentWrapper = card.querySelector('.skill-content-wrapper');
-                        contentWrapper.classList.toggle('hidden');
-                        card.classList.toggle('expanded');
+                    // Close any currently open skill cards, excluding the one just clicked
+                    document.querySelectorAll('.skill-card.expanded').forEach(openCard => {
+                        if (openCard !== clickedCard) {
+                            openCard.querySelector('.skill-content-wrapper').classList.add('hidden');
+                            openCard.classList.remove('expanded');
+                        }
                     });
-                }
+
+                    // Toggle the clicked card's content
+                    const contentWrapper = clickedCard.querySelector('.skill-content-wrapper');
+                    contentWrapper.classList.toggle('hidden');
+                    clickedCard.classList.toggle('expanded');
+                });
             });
 
             document.querySelectorAll('.skill-task-btn').forEach(button => {
