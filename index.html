@@ -42,10 +42,8 @@
         .pillar-card, .skill-card {
             position: relative;
         }
+        /* Adjusted positioning for the toggle icon for better grouping */
         .expand-toggle-icon {
-            position: absolute;
-            top: 1.5rem;
-            right: 1.5rem;
             font-size: 1.5rem;
             color: #f59e0b;
             transition: transform 0.3s ease;
@@ -485,11 +483,12 @@
 
                 grid.innerHTML += `
                     <div class="skill-card bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow relative">
-                        <div class="flex items-center mb-3 cursor-pointer" data-toggle="skill-content" data-skill-id="${skill.id}">
+                        <div class="flex items-center mb-3 cursor-pointer" data-toggle="skill-card-toggle">
                             <span class="text-3xl mr-4">${skill.icon}</span>
                             <h4 class="font-bold text-xl text-slate-800">${skill.title}</h4>
+                            <span class="expand-toggle-icon ml-auto">▼</span>
                         </div>
-                        <span class="expand-toggle-icon cursor-pointer" data-toggle="skill-content" data-skill-id="${skill.id}">▼</span>
+                        
                         <div class="skill-content-wrapper hidden">
                             <p class="text-slate-600 mb-4">${skill.content}</p>
                             <h5 class="font-semibold text-lg text-slate-700 mb-2">Tasks:</h5>
@@ -506,11 +505,24 @@
             });
 
             document.querySelectorAll('.skill-card').forEach(card => {
-                card.querySelector('[data-toggle="skill-content"]').addEventListener('click', (event) => {
-                    const contentWrapper = card.querySelector('.skill-content-wrapper');
-                    contentWrapper.classList.toggle('hidden');
-                    card.classList.toggle('expanded');
-                });
+                // Target the specific toggle element within THIS card
+                const toggleElement = card.querySelector('[data-toggle="skill-card-toggle"]');
+                if (toggleElement) { // Check if the element exists
+                    toggleElement.addEventListener('click', (event) => {
+                        // First, close any currently open skill cards (accordion behavior)
+                        document.querySelectorAll('.skill-card.expanded').forEach(openCard => {
+                            if (openCard !== card) { // Don't close the card that was just clicked
+                                openCard.querySelector('.skill-content-wrapper').classList.add('hidden');
+                                openCard.classList.remove('expanded');
+                            }
+                        });
+
+                        // Then, toggle the clicked card's content
+                        const contentWrapper = card.querySelector('.skill-content-wrapper');
+                        contentWrapper.classList.toggle('hidden');
+                        card.classList.toggle('expanded');
+                    });
+                }
             });
 
             document.querySelectorAll('.skill-task-btn').forEach(button => {
