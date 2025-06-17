@@ -3,547 +3,502 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>30-Day Glow-Up Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>90-Day Holistic Glow-Up App</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+        :root {
+            --primary-color: #6C63FF;
+            --secondary-color: #FF6363;
+            --background-light: #F4F7FC;
+            --text-dark: #333;
+            --text-light: #fff;
+            --card-bg: #fff;
+            --shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            --border-radius: 12px;
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8f7f4; /* A soft, off-white */
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
-        .nav-link {
-            transition: all 0.3s ease;
-            cursor: pointer;
+
+        header {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            padding: 1rem 0;
+            text-align: center;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
-        .nav-link.active {
-            color: #f59e0b; /* Amber-500 */
-            border-bottom: 2px solid #f59e0b;
+
+        header h1 {
+            margin: 0;
+            font-size: 1.8em;
         }
-        .chart-container {
-            position: relative;
-            width: 100%;
-            max-width: 400px;
-            margin-left: auto;
-            margin-right: auto;
-            height: 300px;
-            max-height: 350px;
+
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: var(--card-bg);
+            padding: 0.8rem 0;
+            box-shadow: var(--shadow);
+            margin-bottom: 1rem;
+            position: sticky;
+            top: 60px; /* Adjust if header height changes */
+            z-index: 999;
         }
-        @media (min-width: 768px) {
-            .chart-container {
-                height: 350px;
-            }
+
+        nav a {
+            color: var(--primary-color);
+            text-decoration: none;
+            padding: 0.5rem 1.2rem;
+            margin: 0 0.5rem;
+            border-radius: var(--border-radius);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            font-weight: 600;
         }
-        /* Style for expanded pillar content */
-        .pillar-content.hidden {
-            display: none;
+
+        nav a.active,
+        nav a:hover {
+            background-color: var(--primary-color);
+            color: var(--text-light);
         }
+
+        main {
+            flex-grow: 1;
+            padding: 20px;
+            max-width: 900px;
+            margin: 20px auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        section {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            display: none; /* Hidden by default, shown by JS */
+        }
+
+        section.active {
+            display: block;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 1.6em;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+
+        .pillar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
         .pillar-card {
-            position: relative; /* Needed for absolute positioning of arrow */
+            background-color: var(--background-light);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            transition: transform 0.2s ease;
         }
-        .expand-toggle-icon {
-            position: absolute;
-            top: 1.5rem; /* Adjust as needed */
-            right: 1.5rem; /* Adjust as needed */
-            font-size: 1.5rem; /* Adjust size */
-            color: #f59e0b; /* Amber color */
-            transition: transform 0.3s ease;
+
+        .pillar-card:hover {
+            transform: translateY(-5px);
         }
-        .pillar-card.expanded .expand-toggle-icon {
-            transform: rotate(180deg);
+
+        .pillar-card h3 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            font-size: 1.3em;
         }
-        .progress-message {
-            margin-top: 1rem;
-            font-size: 1.125rem; /* text-lg */
-            font-weight: 500; /* font-medium */
-            color: #475569; /* slate-600 */
+
+        .pillar-card p {
+            font-size: 0.95em;
+            color: #555;
+        }
+
+        .cta-button {
+            display: block;
+            width: fit-content;
+            margin: 20px auto 0;
+            padding: 12px 25px;
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            text-decoration: none;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .cta-button:hover {
+            background-color: #524BCC;
+            transform: translateY(-2px);
+        }
+
+        .goal-item, .resource-item, .faq-item {
+            background-color: var(--background-light);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .goal-item input[type="checkbox"] {
+            transform: scale(1.5);
+            accent-color: var(--primary-color);
+        }
+
+        .goal-item label {
+            flex-grow: 1;
+            font-size: 1.1em;
+        }
+
+        .goal-item.completed label {
+            text-decoration: line-through;
+            color: #888;
+        }
+
+        .faq-item h3 {
+            color: var(--primary-color);
+            cursor: pointer;
+            margin: 0;
+            padding: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .faq-item p {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            padding: 0 10px;
+            color: #555;
+        }
+
+        .faq-item.open p {
+            max-height: 100px; /* Adjust as needed */
+            padding: 10px;
+        }
+
+        footer {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            text-align: center;
+            padding: 1rem 0;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                flex-wrap: wrap;
+                top: 50px;
+            }
+            nav a {
+                margin: 0.3rem;
+                padding: 0.4rem 0.8rem;
+                font-size: 0.9em;
+            }
+            main {
+                padding: 15px;
+                margin: 15px auto;
+            }
+            header h1 {
+                font-size: 1.5em;
+            }
+            h2 {
+                font-size: 1.4em;
+            }
+            .pillar-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
-<body class="text-slate-700">
+<body>
+    <header>
+        <h1>🌟 90-Day Glow-Up Journey 🌟</h1>
+    </header>
 
-    <div id="app" class="max-w-7xl mx-auto p-4 md:p-8">
-        <header class="text-center mb-8">
-            <h1 class="text-4xl md:text-5xl font-bold text-slate-800">Your 30-Day Glow-Up</h1>
-            <p class="mt-2 text-lg text-slate-500">A complete guide to a more confident you.</p>
-        </header>
+    <nav>
+        <a href="#home" class="nav-link active" data-section="home">Home</a>
+        <a href="#pillars" class="nav-link" data-section="pillars">Pillars</a>
+        <a href="#goals" class="nav-link" data-section="goals">My Goals</a>
+        <a href="#resources" class="nav-link" data-section="resources">Resources</a>
+        <a href="#faq" class="nav-link" data-section="faq">FAQ</a>
+    </nav>
 
-        <nav class="flex justify-center border-b border-slate-200 mb-8 space-x-4 sm:space-x-8">
-            <a data-view="dashboard" class="nav-link active py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">Dashboard</a>
-            <a data-view="plan" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">30-Day Plan</a>
-            <a data-view="pillars" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">The Pillars</a>
-            <a data-view="schedule" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">Daily Schedule</a>
-        </nav>
+    <main>
+        <section id="home" class="active">
+            <h2>Welcome to Your Transformation!</h2>
+            <p>Embark on a <strong>90-day journey</strong> to enhance your life holistically. This program focuses on developing key skills and habits that boost your confidence, intelligence, and overall appeal, extending far beyond just physical changes. Get ready to glow from the inside out!</p>
+            <p>Navigate through the sections above to explore the core pillars, set your personal goals, discover helpful resources, and find answers to common questions.</p>
+            <p style="text-align: center; margin-top: 30px; font-weight: 600;">"True attractiveness is about confidence, capability, and being well-rounded."</p>
+        </section>
 
-        <main>
-            <section id="dashboard" class="view">
-                <div class="text-center mb-12">
-                     <h2 class="text-3xl font-bold text-slate-800 mb-2">Welcome! Here's your focus for today.</h2>
-                     <p class="text-slate-500">Consistency is your superpower. Let's make today count!</p>
+        <section id="pillars">
+            <h2>The Pillars of Your Glow-Up</h2>
+            <div class="pillar-grid">
+                <div class="pillar-card">
+                    <h3>1. Tech Savvy & Coding 💻</h3>
+                    <p>Develop logical thinking and problem-solving skills. Learn the basics of coding or explore new software. This enhances your intellectual appeal and resourcefulness.</p>
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="md:col-span-2 bg-white p-6 rounded-2xl shadow-lg">
-                        <h3 class="font-bold text-xl text-slate-800 mb-4">✨ Today's Mission (Day <span id="today-day"></span>)</h3>
-                        <p id="today-task" class="text-lg text-slate-600 leading-relaxed"></p>
-                        <button id="complete-today-btn" class="mt-6 bg-amber-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-amber-600 transition-colors">Mark as Complete</button>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-lg">
-                        <h3 class="font-bold text-xl text-slate-800 mb-4">📊 Progress Tracker</h3>
-                        <div class="chart-container">
-                             <canvas id="progressChart"></canvas>
-                        </div>
-                        <p id="progress-message" class="progress-message text-center"></p>
-                    </div>
+                <div class="pillar-card">
+                    <h3>2. Gaming & Strategy 🎮</h3>
+                    <p>Improve critical thinking, reflexes, and strategic planning. Engage with games that challenge your mind and offer social interaction, boosting your quick wit and focus.</p>
                 </div>
-            </section>
-
-            <section id="plan" class="view hidden">
-                 <div class="text-center mb-8">
-                     <h2 class="text-3xl font-bold text-slate-800 mb-2">Your 30-Day Calendar</h2>
-                     <p class="text-slate-500">Click on any day to see your mission. Today is highlighted for you!</p>
+                <div class="pillar-card">
+                    <h3>3. Connect & Communicate 🗣️</h3>
+                    <p>Master the art of effective communication, active listening, and building rapport. This builds charisma and strengthens your personal and professional relationships.</p>
                 </div>
-                <div id="calendar-grid" class="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-4">
-                    </div>
-            </section>
-
-            <section id="pillars" class="view hidden">
-                <div class="text-center mb-8">
-                     <h2 class="text-3xl font-bold text-slate-800 mb-2">The Six Pillars of Your Glow-Up</h2>
-                     <p class="text-slate-500">These are the core principles behind your daily actions. Click each one to learn more.</p>
+                <div class="pillar-card">
+                    <h3>4. Organize & Streamline 🗂️</h3>
+                    <p>Boost your productivity and reduce stress by developing strong organizational habits. A clear mind and efficient routine lead to a more confident and composed you.</p>
                 </div>
-                <div id="pillars-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    </div>
-            </section>
-
-            <section id="schedule" class="view hidden">
-                <div class="text-center mb-8">
-                     <h2 class="text-3xl font-bold text-slate-800 mb-2">Your Daily Blueprint</h2>
-                     <p class="text-slate-500">A template for success. Use this to structure your days.</p>
+                <div class="pillar-card">
+                    <h3>5. Unleash Creativity 🎨</h3>
+                    <p>Explore artistic outlets, creative writing, or innovative problem-solving. Fostering creativity adds depth to your personality and makes you more engaging.</p>
                 </div>
-                <div class="flex justify-center mb-6">
-                    <button id="weekday-btn" class="schedule-btn bg-amber-500 text-white py-2 px-6 rounded-l-lg font-semibold">Weekday</button>
-                    <button id="weekend-btn" class="schedule-btn bg-slate-200 text-slate-600 py-2 px-6 rounded-r-lg font-semibold">Weekend</button>
+                <div class="pillar-card">
+                    <h3>6. Physical & Mental Well-being 💪🧠</h3>
+                    <p>Prioritize your health with consistent exercise, balanced nutrition, and mindfulness practices. A healthy body and mind are the foundation of true confidence and energy.</p>
                 </div>
-                <div id="schedule-content" class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg max-w-4xl mx-auto">
-                    </div>
-            </section>
-        </main>
+            </div>
+            <a href="#goals" class="cta-button">Set Your Goals Now!</a>
+        </section>
 
-    </div>
+        <section id="goals">
+            <h2>My 90-Day Goals</h2>
+            <p>Customize your journey by setting specific, measurable, achievable, relevant, and time-bound (SMART) goals for each pillar. Track your progress here!</p>
 
-    <div id="task-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full">
-            <h3 class="font-bold text-2xl text-slate-800 mb-4">Day <span id="modal-day"></span> Mission</h3>
-            <p id="modal-task" class="text-slate-600 mb-6"></p>
-            <button id="close-modal-btn" class="w-full bg-slate-200 text-slate-700 font-bold py-2 px-4 rounded-lg hover:bg-slate-300 transition-colors">Close</button>
-        </div>
-    </div>
-    
-    <div id="message-box" class="fixed bottom-5 right-5 bg-green-500 text-white py-3 px-5 rounded-lg shadow-xl transform translate-y-20 opacity-0 transition-all duration-500">
-        Task marked as complete!
-    </div>
+            <h3>Tech Savvy & Coding</h3>
+            <div class="goal-item">
+                <input type="checkbox" id="goal1">
+                <label for="goal1">Complete an online "Intro to Python" course.</label>
+            </div>
+            <div class="goal-item">
+                <input type="checkbox" id="goal2">
+                <label for="goal2">Build a simple HTML personal webpage.</label>
+            </div>
 
+            <h3>Gaming & Strategy</h3>
+            <div class="goal-item">
+                <input type="checkbox" id="goal3">
+                <label for="goal3">Reach a new rank in a strategic online game (e.g., Chess, Valorant).</label>
+            </div>
+            <div class="goal-item">
+                <input type="checkbox" id="goal4">
+                <label for="goal4">Solve 10 complex logic puzzles each week.</label>
+            </div>
+
+            <h3>Connect & Communicate</h3>
+            <div class="goal-item">
+                <input type="checkbox" id="goal5">
+                <label for="goal5">Initiate a conversation with a new person daily.</label>
+            </div>
+            <div class="goal-item">
+                <input type="checkbox" id="goal6">
+                <label for="goal6">Practice public speaking/presentation skills once a week.</label>
+            </div>
+
+            <h3>Organize & Streamline</h3>
+            <div class="goal-item">
+                <input type="checkbox" id="goal7">
+                <label for="goal7">Implement a daily planner/to-do list system.</label>
+            </div>
+            <div class="goal-item">
+                <input type="checkbox" id="goal8">
+                <label for="goal8">Declutter and organize one area of my home each week.</label>
+            </div>
+
+            <h3>Unleash Creativity</h3>
+            <div class="goal-item">
+                <input type="checkbox" id="goal9">
+                <label for="goal9">Start a creative writing project (e.g., short story, journal).</label>
+            </div>
+            <div class="goal-item">
+                <input type="checkbox" id="goal10">
+                <label for="goal10">Learn a new drawing technique or musical chord progression.</label>
+            </div>
+
+            <h3>Physical & Mental Well-being</h3>
+            <div class="goal-item">
+                <input type="checkbox" id="goal11">
+                <label for="goal11">Exercise for at least 30 minutes, 5 times a week.</label>
+            </div>
+            <div class="goal-item">
+                <input type="checkbox" id="goal12">
+                <label for="goal12">Practice 10 minutes of mindfulness/meditation daily.</label>
+            </div>
+
+            <p style="text-align: center; margin-top: 30px; font-weight: 600;">Remember: Consistency is key to transformation!</p>
+        </section>
+
+        <section id="resources">
+            <h2>Helpful Resources</h2>
+            <p>Here are some general types of resources to help you on your journey. Tailor these to your specific interests!</p>
+            <div class="resource-item">
+                <h3>For Tech Savvy & Coding:</h3>
+                <ul>
+                    <li>Codecademy, freeCodeCamp, Coursera (online coding platforms)</li>
+                    <li>YouTube tutorials (e.g., "Python for Beginners")</li>
+                    <li>Local coding bootcamps or workshops</li>
+                </ul>
+            </div>
+            <div class="resource-item">
+                <h3>For Gaming & Strategy:</h3>
+                <ul>
+                    <li>Chess.com, Lichess.org (for Chess)</li>
+                    <li>Specific game communities and forums (e.g., Reddit, Discord)</li>
+                    <li>Strategy guides and analysis videos for your chosen games</li>
+                </ul>
+            </div>
+            <div class="resource-item">
+                <h3>For Connect & Communicate:</h3>
+                <ul>
+                    <li>Books on communication skills (e.g., "How to Win Friends and Influence People")</li>
+                    <li>Toastmasters International (for public speaking)</li>
+                    <li>Podcasts on social dynamics and conversation skills</li>
+                </ul>
+            </div>
+            <div class="resource-item">
+                <h3>For Organize & Streamline:</h3>
+                <ul>
+                    <li>Productivity apps (e.g., Todoist, Notion, Trello)</li>
+                    <li>Books on time management (e.g., "Getting Things Done")</li>
+                    <li>Bullet Journaling guides</li>
+                </ul>
+            </div>
+            <div class="resource-item">
+                <h3>For Unleash Creativity:</h3>
+                <ul>
+                    <li>Online courses (e.g., Skillshare, Domestika for art/music)</li>
+                    <li>Prompt generators for writing or drawing</li>
+                    <li>Local art classes or community workshops</li>
+                </ul>
+            </div>
+            <div class="resource-item">
+                <h3>For Physical & Mental Well-being:</h3>
+                <ul>
+                    <li>Fitness apps (e.g., Nike Training Club, Peloton App)</li>
+                    <li>Meditation apps (e.g., Headspace, Calm)</li>
+                    <li>Reputable nutrition websites or dietitians</li>
+                    <li>Yoga/Pilates studios or online classes</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="faq">
+            <h2>Frequently Asked Questions</h2>
+            <div class="faq-item">
+                <h3>What if I miss a day or a goal? <span class="toggle-icon">+</span></h3>
+                <p>It's perfectly fine! The key is consistency over time, not perfection. Just get back on track the next day. Don't let a missed day derail your entire 90-day journey.</p>
+            </div>
+            <div class="faq-item">
+                <h3>How do I stay motivated? <span class="toggle-icon">+</span></h3>
+                <p>Set small, achievable daily goals. Celebrate small wins. Remind yourself of your "why" – the vision of your glowing self. Consider finding an accountability partner.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Can I customize the pillars? <span class="toggle-icon">+</span></h3>
+                <p>Absolutely! This is your journey. Feel free to swap out or add pillars that resonate more with your personal growth aspirations. The goal is holistic improvement tailored to you.</p>
+            </div>
+            <div class="faq-item">
+                <h3>When will I see results? <span class="toggle-icon">+</span></h3>
+                <p>Some changes, like increased energy or confidence, might appear quickly. Deeper skill acquisition and noticeable external changes will develop over the full 90 days. Trust the process!</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Your Glow-Up Journey. All rights reserved.</p>
+    </footer>
 
     <script>
-        const AppState = {
-            currentView: 'dashboard',
-            today: 1, // This will be calculated from startDate
-            completedDays: new Set(),
-            startDate: null, // Stores the challenge start date (e.g., '2023-10-27')
-            lastVisitDate: null // Stores the date of the last visit to check for new days
-        };
+        document.addEventListener('DOMContentLoaded', () => {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('main section');
+            const faqItems = document.querySelectorAll('.faq-item h3');
+            const goalCheckboxes = document.querySelectorAll('.goal-item input[type="checkbox"]');
 
-        const dailyTasks = [
-            { day: 1, pillar: 'Mind', task: "Goal Setting & Hydration: Write down your goals for this 30-day journey. Start tracking your water intake." },
-            { day: 2, pillar: 'Skin', task: "Simple Cleansing: Focus on being gentle when you wash your face morning and night." },
-            { day: 3, pillar: 'Body', task: "Mindful Movement: Go for a 20-minute walk. If you can't go out, do 20 mins of marching/jogging in place at home." },
-            { day: 4, pillar: 'Mind', task: "Study Space Overhaul: Organize your desk and study area for a fresh start." },
-            { day: 5, pillar: 'Nourish', task: "Fruit Focus: Try a fruit you haven't had in a while. Enjoy it as a snack." },
-            { day: 6, pillar: 'Nourish', task: "Healthy Swap: Swap one sugary drink (like soda or juice) for a glass of water today." },
-            { day: 7, pillar: 'Mind', task: "Reflection & Relaxation: Review your week. Listen to a favorite playlist or read a book." },
-            { day: 8, pillar: 'Body', task: "Workout Fun: Try a 15-minute dance workout to your favorite songs." },
-            { day: 9, pillar: 'Mind', task: "Active Learning: Try summarizing a chapter from a school book in your own words." },
-            { day: 10, pillar: 'Body', task: "Strength Starter: Do 2 sets of 10 squats and try holding a plank for 20 seconds." },
-            { day: 11, pillar: 'Hygiene', task: "Hygiene Refresh: Make sure your toothbrush is clean. Wear fresh, clean clothes." },
-            { day: 12, pillar: 'Style', task: "Style Fun: Try a new, simple hairstyle (like a neat ponytail, braid, or half-up)." },
-            { day: 13, pillar: 'Nourish', task: "Snack Smart: Choose a piece of fruit over chips or candy for your snack." },
-            { day: 14, pillar: 'Mind', task: "Mid-Point Check-in: How are you feeling? Notice any small changes? Pat yourself on the back!" },
-            { day: 15, pillar: 'Nourish', task: "Breakfast Boost: Start your day with a banana or another fruit." },
-            { day: 16, pillar: 'Mind', task: "Brain Boost: Spend 20 minutes reading something just for fun (a book, a comic, a webtoon)." },
-            { day: 17, pillar: 'Body', task: "Cardio Challenge: Try 3 sets of 30 jumping jacks." },
-            { day: 18, pillar: 'Style', task: "Closet Cleanse: Go through your clothes. What feels good to wear? Organize your favorite outfits." },
-            { day: 19, pillar: 'Mind', task: "Gratitude Practice: Before bed, think of one good thing that happened today." },
-            { day: 20, pillar: 'Skin', task: "Self-Care Simple: Take a relaxing bath or shower. Gently scrub your arms and legs with a washcloth for soft skin." },
-            { day: 21, pillar: 'Body', task: "Outdoor Time: Spend 15 minutes outside in the morning or late afternoon (not in the midday sun)." },
-            { day: 22, pillar: 'Nourish', task: "Kitchen Helper: Offer to help with one part of preparing a family meal (like washing rice or setting the table)." },
-            { day: 23, pillar: 'Mind', task: "Focus Power: Try the Pomodoro Technique for your homework (25 mins study, 5 mins break)." },
-            { day: 24, pillar: 'Body', task: "Full-Body Flow: Do a 20-minute routine: jumping jacks, squats, push-ups (on knees is fine!), and a plank." },
-            { day: 25, pillar: 'Hygiene', task: "Scent-sational Self-Care: Make sure you're using deodorant daily. A little baby powder can also help you feel fresh." },
-            { day: 26, pillar: 'Style', task: "Outfit of the Day: Pick out your favorite clean outfit and wear it with confidence." },
-            { day: 27, pillar: 'Mind', task: "Mindful Morning: Start your day with 5 minutes of quiet stretching before getting up." },
-            { day: 28, pillar: 'Mind', task: "Knowledge is Power: Watch an interesting educational video on YouTube." },
-            { day: 29, pillar: 'Style', task: "Confidence Boost: Stand up straight, pull your shoulders back, and smile at yourself in the mirror." },
-            { day: 30, pillar: 'Mind', task: "Celebrate You! Look back at Day 1. You've built so many healthy habits. Be proud of your consistency!" }
-        ];
+            // --- Navigation Logic ---
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetSectionId = link.dataset.section;
 
-        const pillarsData = [
-            { id: 'nourish', icon: '🍎', title: 'Nourish Your Body', content: "Fuel your body for energy and health. Focus on fruits (2-3 servings daily), 'hidden' veggies in dishes like lumpia or spaghetti sauce, and drink 6-8 glasses of water. A smoothie with banana and malunggay is a great nutrient boost." },
-            { id: 'body', icon: '💪', title: 'Move Your Body', content: "Get stronger and boost your mood without a gym. Aim for 30 minutes of movement 5 days a week. Combine 15-20 mins of cardio (dancing, jumping jacks) with 10-15 mins of strength (squats, planks, push-ups)." },
-            { id: 'skin', icon: '✨', title: 'Radiant Skin', content: "Achieve clean, healthy skin with a simple routine. Your #1 priority is cleansing your face gently with mild soap and water every morning and night. For sun protection, seek shade, wear a cap, or use an umbrella, especially from 10 AM to 4 PM." },
-            { id: 'hygiene', icon: '💧', title: 'Impeccable Hygiene', content: "Feel and smell fresh all day. Key habits include daily showers (especially after exercise), brushing your teeth twice a day, using deodorant every morning, and wearing completely fresh, clean clothes every day." },
-            { id: 'mind', icon: '🧠', title: 'Sharpen Your Mind', content: "Make learning more effective. Keep a dedicated, organized study space. Use the Pomodoro Technique (25 mins focus, 5 mins break) to avoid burnout. Review your notes for 15 minutes each evening to retain information." },
-            { id: 'style', icon: '👕', title: 'Cultivate Your Style', content: "Express yourself and feel confident. Use Pinterest for inspiration. Master the basics like well-fitting jeans and clean t-shirts. A simple outfit looks great with neat hair and good posture. Pick out your clothes the night before." }
-        ];
+                    // Remove active from all links and sections
+                    navLinks.forEach(nav => nav.classList.remove('active'));
+                    sections.forEach(sec => sec.classList.remove('active'));
 
-        const schedulesData = {
-            weekday: `
-                <h4 class="font-bold text-lg mb-4 text-slate-700">Weekday Schedule</h4>
-                <ul class="space-y-3 text-slate-600">
-                    <li><strong>5:30-6:00 AM:</strong> Wake Up & Hydrate, Stretch, Wash Face, Brush Teeth.</li>
-                    <li><strong>6:00-6:30 AM:</strong> Shower, Deodorant, Get Dressed, Fix Hair.</li>
-                    <li><strong>6:30-7:00 AM:</strong> Healthy Breakfast, Pack Bag, Fill Water Bottle.</li>
-                    <li><strong>7:00 AM-3:00 PM:</strong> School Time (Participate, stay hydrated).</li>
-                    <li><strong>3:00-4:00 PM:</strong> Arrive Home, Healthy Snack, Rest (no gadgets).</li>
-                    <li><strong>4:00-5:00 PM:</strong> Glow-Up Hour (Workout + Daily Mission).</li>
-                    <li><strong>5:00-6:30 PM:</strong> Homework & Study.</li>
-                    <li><strong>6:30-8:00 PM:</strong> Dinner & Family Time.</li>
-                    <li><strong>8:00-9:00 PM:</strong> Wind Down (Review notes, pick clothes, read, relax).</li>
-                    <li><strong>9:00-9:30 PM:</strong> Final Prep for Bed (No screens, wash face, brush teeth).</li>
-                </ul>
-            `,
-            weekend: `
-                <h4 class="font-bold text-lg mb-4 text-slate-700">Weekend Schedule</h4>
-                 <ul class="space-y-3 text-slate-600">
-                    <li><strong>Morning (8 AM-12 PM):</strong> Wake up, Hydrate, Breakfast, Hygiene Routine, Glow-Up Hour (Workout + Mission).</li>
-                    <li><strong>Afternoon (12 PM-5 PM):</strong> Lunch, Household Chores, 1-hour School Review/Project Work, Free Time/Hobbies.</li>
-                    <li><strong>Evening (5 PM onwards):</strong> Relax, Dinner, Family Time.</li>
-                    <li class="pt-2 font-semibold text-amber-600"><strong>Sunday Night:</strong> Do your "Wind Down" routine to prepare for Monday!</li>
-                </ul>
-            `
-        };
-        
-        let progressChartInstance = null;
-        
-        function updateView(viewName) {
-            document.querySelectorAll('.view').forEach(view => view.classList.add('hidden'));
-            document.getElementById(viewName).classList.remove('hidden');
-
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.classList.remove('active');
-                if (link.dataset.view === viewName) {
+                    // Add active to clicked link and corresponding section
                     link.classList.add('active');
-                }
-            });
-            AppState.currentView = viewName;
-        }
+                    document.getElementById(targetSectionId).classList.add('active');
 
-        function renderDashboard() {
-            // Get the current challenge day (capped at 30 for display purposes on dashboard)
-            const currentChallengeDay = AppState.today > 30 ? 30 : AppState.today;
-            
-            // Get the task for the current challenge day. If we're past day 30, show Day 30's task.
-            const taskForToday = dailyTasks.find(t => t.day === currentChallengeDay) || dailyTasks[dailyTasks.length - 1]; 
-            
-            document.getElementById('today-day').textContent = currentChallengeDay;
-            document.getElementById('today-task').textContent = taskForToday.task;
-
-            const completeBtn = document.getElementById('complete-today-btn');
-            // Check if the current challenge day has been completed
-            if (AppState.completedDays.has(currentChallengeDay)) {
-                completeBtn.textContent = 'Completed!';
-                completeBtn.disabled = true;
-                completeBtn.classList.add('bg-green-500', 'hover:bg-green-500');
-                completeBtn.classList.remove('bg-amber-500', 'hover:bg-amber-600');
-            } else {
-                 completeBtn.textContent = 'Mark as Complete';
-                completeBtn.disabled = false;
-                completeBtn.classList.remove('bg-green-500', 'hover:bg-green-500');
-                completeBtn.classList.add('bg-amber-500', 'hover:bg-amber-600');
-            }
-            renderProgressChart(); // Update the chart whenever dashboard renders
-        }
-
-        function renderCalendar() {
-            const grid = document.getElementById('calendar-grid');
-            grid.innerHTML = '';
-            dailyTasks.forEach(task => {
-                const dayEl = document.createElement('div');
-                dayEl.dataset.day = task.day;
-                dayEl.className = 'day-cell h-20 sm:h-24 flex items-center justify-center font-bold text-xl rounded-lg cursor-pointer transition-all duration-300';
-                dayEl.textContent = task.day;
-                
-                let baseClasses = 'bg-white shadow-md hover:shadow-xl hover:-translate-y-1';
-                
-                if (AppState.completedDays.has(task.day)) {
-                    baseClasses = 'bg-green-100 text-green-700 shadow-sm';
-                }
-                
-                // Highlight the current *challenge* day on the calendar
-                if (task.day === AppState.today) {
-                    baseClasses += ' ring-2 ring-amber-500';
-                }
-                
-                dayEl.classList.add(...baseClasses.split(' '));
-                
-                grid.appendChild(dayEl);
-            });
-        }
-        
-        function renderPillars() {
-            const grid = document.getElementById('pillars-grid');
-            grid.innerHTML = '';
-            pillarsData.forEach(pillar => {
-                // Add 'hidden' to pillar-content by default and an expand icon
-                grid.innerHTML += `
-                    <div class="pillar-card bg-white p-6 rounded-2xl shadow-lg cursor-pointer hover:shadow-xl transition-shadow relative">
-                        <div class="flex items-center mb-3">
-                            <span class="text-3xl mr-4">${pillar.icon}</span>
-                            <h4 class="font-bold text-xl text-slate-800">${pillar.title}</h4>
-                        </div>
-                        <p class="pillar-content text-slate-600 hidden">${pillar.content}</p>
-                        <span class="expand-toggle-icon">▼</span>
-                    </div>
-                `;
-            });
-            // Add event listeners for pillar cards to toggle content
-            document.querySelectorAll('.pillar-card').forEach(card => {
-                card.addEventListener('click', () => {
-                    card.querySelector('.pillar-content').classList.toggle('hidden');
-                    card.classList.toggle('expanded'); // Add/remove class for icon rotation
+                    // Scroll to the top of the main content area
+                    document.querySelector('main').scrollIntoView({ behavior: 'smooth', block: 'start' });
                 });
             });
-        }
-        
-        function renderSchedule(type = 'weekday') {
-            document.getElementById('schedule-content').innerHTML = schedulesData[type];
-            const weekdayBtn = document.getElementById('weekday-btn');
-            const weekendBtn = document.getElementById('weekend-btn');
 
-            if (type === 'weekday') {
-                weekdayBtn.classList.add('bg-amber-500', 'text-white');
-                weekdayBtn.classList.remove('bg-slate-200', 'text-slate-600');
-                weekendBtn.classList.add('bg-slate-200', 'text-slate-600');
-                weekendBtn.classList.remove('bg-amber-500', 'text-white');
-            } else {
-                weekendBtn.classList.add('bg-amber-500', 'text-white');
-                weekendBtn.classList.remove('bg-slate-200', 'text-slate-600');
-                weekdayBtn.classList.add('bg-slate-200', 'text-slate-600');
-                weekdayBtn.classList.remove('bg-amber-500', 'text-white');
-            }
-        }
+            // --- FAQ Accordion Logic ---
+            faqItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const parent = item.closest('.faq-item');
+                    const answer = parent.querySelector('p');
+                    const toggleIcon = parent.querySelector('.toggle-icon');
 
-        function renderProgressChart() {
-            const ctx = document.getElementById('progressChart').getContext('2d');
-            const completedCount = AppState.completedDays.size;
-            const totalDays = 30; // Total days in the challenge
-            const remainingCount = totalDays - completedCount;
-
-            const data = {
-                labels: ['Completed', 'Remaining'],
-                datasets: [{
-                    data: [completedCount, remainingCount],
-                    backgroundColor: [
-                        '#10b981', // Emerald-500
-                        '#e5e7eb'  // Gray-200
-                    ],
-                    borderColor: '#f8f7f4',
-                    borderWidth: 4,
-                    hoverOffset: 4
-                }]
-            };
-
-            let progressMessage = '';
-            if (completedCount === totalDays) {
-                progressMessage = "🎉 Challenge Completed! You're amazing!";
-            } else if (completedCount >= totalDays / 2) {
-                progressMessage = `Halfway there! Keep glowing! (${completedCount}/${totalDays})`;
-            } else if (completedCount > 0) {
-                progressMessage = `You're on your way! (${completedCount}/${totalDays})`;
-            } else {
-                progressMessage = `Start your journey today! (${completedCount}/${totalDays})`;
-            }
-            document.getElementById('progress-message').textContent = progressMessage;
-
-            const chartTitle = `${completedCount} of ${totalDays} Days Complete`;
-
-            if(progressChartInstance) {
-                progressChartInstance.data.datasets[0].data = [completedCount, remainingCount];
-                progressChartInstance.options.plugins.title.text = chartTitle; // Update title
-                progressChartInstance.update();
-            } else {
-                progressChartInstance = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: data,
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        cutout: '70%',
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                enabled: true
-                            },
-                            title: {
-                                display: true,
-                                text: chartTitle, // Initial title
-                                font: {
-                                    size: 16,
-                                    weight: 'bold'
-                                },
-                                color: '#334155'
-                            }
-                        }
+                    parent.classList.toggle('open');
+                    if (parent.classList.contains('open')) {
+                        answer.style.maxHeight = answer.scrollHeight + 'px';
+                        toggleIcon.textContent = '-';
+                    } else {
+                        answer.style.maxHeight = '0';
+                        toggleIcon.textContent = '+';
                     }
                 });
-            }
-        }
-        
-        function showModalForDay(dayNumber) {
-            const task = dailyTasks.find(t => t.day == dayNumber);
-            if(task) {
-                document.getElementById('modal-day').textContent = task.day;
-                document.getElementById('modal-task').textContent = task.task;
-                document.getElementById('task-modal').classList.remove('hidden');
-            }
-        }
-        
-        function showMessage(text) {
-            const msgBox = document.getElementById('message-box');
-            msgBox.textContent = text;
-            msgBox.classList.remove('opacity-0', 'translate-y-20');
-            setTimeout(() => {
-                msgBox.classList.add('opacity-0', 'translate-y-20');
-            }, 3000);
-        }
-
-        // Helper to format date to YYYY-MM-DD
-        function formatDate(date) {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
-
-        function loadState() {
-            const savedState = localStorage.getItem('glowUpAppState');
-            if (savedState) {
-                const parsedState = JSON.parse(savedState);
-                AppState.completedDays = new Set(parsedState.completedDays || []);
-                AppState.startDate = parsedState.startDate ? new Date(parsedState.startDate) : null;
-                AppState.lastVisitDate = parsedState.lastVisitDate || null; // Load last visit date
-            }
-
-            // Normalize current date for calculation
-            const todayActual = new Date();
-            todayActual.setHours(0, 0, 0, 0); 
-            const todayFormatted = formatDate(todayActual);
-
-            // If no start date, set it to today and initialize
-            if (!AppState.startDate) {
-                AppState.startDate = new Date(todayActual); // Use normalized date
-                AppState.lastVisitDate = todayFormatted; // Set last visit to today
-                saveState(); // Save the new start date and last visit
-            }
-
-            // Calculate current challenge day based on startDate
-            const diffTime = Math.abs(todayActual.getTime() - AppState.startDate.getTime());
-            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); // Use floor for exact days passed
-
-            AppState.today = diffDays + 1; // Day 1 for first day, +1 for subsequent days
-
-            // Check if it's a new day since the last visit
-            if (AppState.lastVisitDate !== todayFormatted) {
-                console.log(`New day detected! Last visit: ${AppState.lastVisitDate}, Current day: ${todayFormatted}`);
-                // No specific action needed here other than AppState.today being updated,
-                // as the dashboard will automatically reflect the new day's task.
-                // You could add a "Welcome to Day X!" message if desired.
-                AppState.lastVisitDate = todayFormatted; // Update last visit date
-                saveState(); // Save updated last visit date
-            }
-
-            // Log current state for debugging
-            console.log("AppState after loadState:", {
-                today: AppState.today,
-                completedDays: Array.from(AppState.completedDays),
-                startDate: AppState.startDate ? AppState.startDate.toISOString().split('T')[0] : null,
-                lastVisitDate: AppState.lastVisitDate
-            });
-        }
-
-        function saveState() {
-            const stateToSave = {
-                completedDays: Array.from(AppState.completedDays),
-                startDate: AppState.startDate ? formatDate(AppState.startDate) : null, // Save as YYYY-MM-DD string
-                lastVisitDate: AppState.lastVisitDate // Save last visit date
-            };
-            localStorage.setItem('glowUpAppState', JSON.stringify(stateToSave));
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            loadState(); // Load state and calculate AppState.today
-            
-            // Setup navigation
-            document.querySelector('nav').addEventListener('click', (e) => {
-                if (e.target.matches('.nav-link')) {
-                    const viewName = e.target.dataset.view;
-                    updateView(viewName);
-                }
             });
 
-            // Setup calendar interactivity
-            document.getElementById('calendar-grid').addEventListener('click', (e) => {
-                const dayCell = e.target.closest('.day-cell');
-                if (dayCell) {
-                    showModalForDay(dayCell.dataset.day);
-                }
-            });
-            
-            // Setup modal close
-            document.getElementById('close-modal-btn').addEventListener('click', () => {
-                 document.getElementById('task-modal').classList.add('hidden');
-            });
-            document.getElementById('task-modal').addEventListener('click', (e) => {
-                if (e.target.id === 'task-modal') {
-                     document.getElementById('task-modal').classList.add('hidden');
-                }
-            });
+            // --- Goal Tracker Logic (using Local Storage) ---
+            goalCheckboxes.forEach(checkbox => {
+                const goalId = checkbox.id;
+                const storedState = localStorage.getItem(goalId);
 
-            // Setup schedule toggle
-            document.getElementById('weekday-btn').addEventListener('click', () => renderSchedule('weekday'));
-            document.getElementById('weekend-btn').addEventListener('click', () => renderSchedule('weekend'));
-
-            // Setup complete button
-            document.getElementById('complete-today-btn').addEventListener('click', () => {
-                const currentChallengeDay = AppState.today; // This is the day based on challenge progress
-
-                if (currentChallengeDay > 30) {
-                     showMessage('All 30 days are complete! You are amazing!');
-                     return; // Don't allow marking beyond 30 days
+                if (storedState === 'checked') {
+                    checkbox.checked = true;
+                    checkbox.closest('.goal-item').classList.add('completed');
                 }
 
-                if (!AppState.completedDays.has(currentChallengeDay)) {
-                    AppState.completedDays.add(currentChallengeDay);
-                    saveState();
-                    renderDashboard(); // Re-render dashboard to update button state and chart
-                    renderCalendar(); // Re-render calendar to show day as complete
-                    showMessage('Great job! Mission complete!');
-                } else {
-                    showMessage('You' + "'" + 've already completed today' + "'" + 's mission!');
-                }
+                checkbox.addEventListener('change', () => {
+                    if (checkbox.checked) {
+                        localStorage.setItem(goalId, 'checked');
+                        checkbox.closest('.goal-item').classList.add('completed');
+                    } else {
+                        localStorage.removeItem(goalId);
+                        checkbox.closest('.goal-item').classList.remove('completed');
+                    }
+                });
             });
-
-            // Initial render
-            renderDashboard();
-            renderCalendar();
-            renderPillars(); 
-            renderSchedule('weekday');
         });
     </script>
-
 </body>
 </html>
