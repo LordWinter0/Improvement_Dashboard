@@ -167,7 +167,8 @@
             border: 1px solid #e2e8f0;
         }
         .personalization-form input[type="text"],
-        .personalization-form select {
+        .personalization-form select,
+        .personalization-form textarea {
             width: 100%;
             padding: 0.75rem;
             border: 1px solid #cbd5e1;
@@ -279,8 +280,15 @@
             background-color: #8b5cf6; /* Violet-500 */
         }
         .goal-item {
+            display: flex; /* Added display flex */
+            align-items: center; /* Added align-items center */
+            justify-content: space-between; /* Added justify-content space-between */
             background-color: #ede9fe; /* Violet-50 */
             border-color: #c4b5fd; /* Violet-200 */
+            padding: 0.75rem 1rem; /* Consistent padding */
+            border-radius: 0.5rem; /* Consistent border-radius */
+            margin-bottom: 0.5rem; /* Consistent margin */
+            border: 1px solid; /* Consistent border */
         }
         .goal-item.completed {
             background-color: #d1fae5;
@@ -339,6 +347,17 @@
             background-color: #fef3c7; /* Yellow-100 */
             color: #92400e; /* Yellow-900 */
         }
+
+        /* Modal for "Why You Missed?" */
+        .missed-reason-modal {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
     </style>
 </head>
 <body class="text-slate-700">
@@ -372,6 +391,16 @@
                     </div>
                 </div>
 
+                <!-- Custom Affirmation Editor -->
+                <div class="mb-6">
+                    <label for="custom-affirmation-input" class="mb-3">Add Your Own Affirmation:</label>
+                    <textarea id="custom-affirmation-input" rows="2" placeholder="E.g., I am capable of amazing things! ✨" class="focus:ring-amber-500 focus:border-amber-500"></textarea>
+                    <button id="add-affirmation-btn" class="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-blue-600 transition-colors text-sm">Add Affirmation</button>
+                    <div id="user-affirmations-list" class="mt-4 space-y-2 text-slate-600 text-sm">
+                        <!-- User-added affirmations will appear here -->
+                    </div>
+                </div>
+
                 <button id="start-glow-up-btn" class="w-full gradient-button text-white font-bold py-3 px-6 rounded-lg text-lg shadow-md hover:shadow-lg">Start Your Glow-Up!</button>
             </div>
         </section>
@@ -389,6 +418,7 @@
                 <a data-view="pillars" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">The Pillars</a>
                 <a data-view="skills" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">Skills</a>
                 <a data-view="daily-focus" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">Daily Focus</a>
+                <a data-view="goals" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">Goals</a> <!-- New Goals Nav Link -->
                 <a data-view="shop" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">Shop</a>
                 <a data-view="achievements" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">Badges</a>
                 <a data-view="schedule" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">Daily Schedule</a>
@@ -415,7 +445,7 @@
                                 <p id="daily-affirmation" class="text-amber-800 text-base italic">Your daily boost of positivity...</p>
                             </div>
 
-                            <!-- New: Mood Tracker & Daily Highlight -->
+                            <!-- Mood Tracker & Daily Highlight -->
                             <div class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label for="mood-select" class="block font-semibold text-slate-700 mb-2">How's your mood today?</label>
@@ -475,7 +505,7 @@
 
                             <!-- New: Pillar/Skill Quick Glance -->
                             <div class="bg-white p-6 rounded-2xl shadow-2xl border border-slate-100">
-                                <h3 class="font-bold text-xl text-slate-800 mb-4">📚 Your Pillars & Skills</h3>
+                                <h3 class="font-bold text-xl text-slate-800 mb-4">📚 Your Pillars & Skills Progress</h3>
                                 <div id="quick-glance-content" class="space-y-4">
                                     <!-- Rendered by JS -->
                                     <p class="text-sm text-slate-500 italic">Progress overview will appear here.</p>
@@ -615,6 +645,26 @@
                     </div>
                 </section>
 
+                <!-- Global Goals Section (New) -->
+                <section id="goals" class="view hidden">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-slate-700 mb-2">🌟 Your Personal Goals 🌟</h2>
+                        <p class="text-slate-500">Set big goals and track your progress here!</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-2xl border border-slate-100 max-w-2xl mx-auto">
+                        <h4 class="font-semibold text-xl text-slate-700 mb-3">My Goals:</h4>
+                        <div id="global-goals-list" class="space-y-2 mb-4">
+                            <!-- Global goals will be rendered here -->
+                            <p class="text-slate-500 italic text-sm">No global goals set yet. Add your first one!</p>
+                        </div>
+                        <div class="flex">
+                            <input type="text" id="add-global-goal-input" class="add-goal-input focus:ring-violet-400 focus:border-violet-400" placeholder="Add a new personal goal...">
+                            <button id="add-global-goal-btn" class="add-goal-btn">Add</button>
+                        </div>
+                    </div>
+                </section>
+
+
                 <!-- Shop Section -->
                 <section id="shop" class="view hidden">
                     <div class="text-center mb-8">
@@ -635,7 +685,7 @@
                 <section id="achievements" class="view hidden">
                     <div class="text-center mb-8">
                         <h2 class="text-3xl font-bold text-slate-700 mb-2">🏅 Your Achievements 🏅</h2>
-                        <p class="text-500">Milestones on your Glow-Up Journey!</p>
+                        <p class="text-slate-500">Milestones on your Glow-Up Journey!</p>
                     </div>
                     <div id="badges-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
                         <!-- Badges will be rendered here by JS -->
@@ -660,7 +710,7 @@
         </div> <!-- End of app-main-content -->
     </div>
 
-    <!-- Modals (Task Modal and Message Box) -->
+    <!-- Modals (Task Modal, Message Box, and Why Missed Modal) -->
     <div id="task-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
         <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full border border-slate-200">
             <h3 class="font-bold text-2xl text-slate-800 mb-4">Day <span id="modal-day"></span> Mission</h3>
@@ -671,6 +721,16 @@
     
     <div id="message-box" class="fixed bottom-5 right-5 bg-green-500 text-white py-3 px-5 rounded-lg shadow-xl transform translate-y-20 opacity-0 transition-all duration-500 z-50">
         Task marked as complete!
+    </div>
+
+    <!-- Why Missed Modal -->
+    <div id="missed-reason-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+        <div class="missed-reason-modal">
+            <h3 class="font-bold text-xl text-slate-800 mb-4">Why was this day a miss? 🤔</h3>
+            <p class="text-slate-600 mb-4">Understanding helps us improve!</p>
+            <textarea id="missed-reason-input" rows="3" class="w-full p-2 border border-slate-300 rounded-md focus:ring-amber-500 focus:border-amber-500 mb-4" placeholder="E.g., Too busy, forgot, not feeling well, challenging task..."></textarea>
+            <button id="submit-missed-reason-btn" class="w-full bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600 transition-colors shadow-sm">Submit Reason</button>
+        </div>
     </div>
 
     <script>
@@ -737,7 +797,7 @@
             completedDays: new Set(),
             currentStreak: 0,
             bestStreak: 0,
-            dailyActivityMap: {}, // Tracks activity for heatmap: { 'YYYY-MM-DD': { main: true/false, focus: true/false, mood: string, highlight: string } }
+            dailyActivityMap: {}, // Tracks activity for heatmap: { 'YYYY-MM-DD': { main: true/false, focus: true/false, mood: string, highlight: string, missedReason: string } }
             completedSkillTasks: {}, // { skillId: [taskIndex1, taskIndex2], ... }
             completedPillarTasks: {}, // { pillarId: [taskIndex1, taskIndex2], ... }
             tokens: 0,
@@ -747,6 +807,7 @@
             nextDailyFocusBonus: 0,
             restDaysAvailable: 0,
             userGoals: {}, // { entityId: [{ id: uuid, text: 'goal', completed: false }] }
+            globalGoals: [], // New: For dedicated global goals section
             earnedBadges: new Set(),
             purchasedShopItems: new Set(), // New: To track distinct items bought for achievements
             lastSummaryDate: null,
@@ -764,6 +825,7 @@
                 "Small daily improvements are the key to staggering long-term results. 📈",
                 "Your mindset is everything. Think positive, be positive! 😊"
             ],
+            userAffirmations: [], // New: For user-added affirmations
         };
 
         const dailyTasks = Array.from({ length: TOTAL_CHALLENGE_DAYS }, (_, i) => {
@@ -780,7 +842,7 @@
                     case 6: pillar = 'Nourish'; task = "Healthy Swap: Swap one sugary drink for water."; break;
                     case 7: pillar = 'Mind'; task = "Reflection & Relaxation: Review your week. Listen to music or read."; break;
                     case 8: pillar = 'Body'; task = "Workout Fun: 15-minute dance workout."; break;
-                    case 9: pillar = 'Mind'; task = "Active Learning: Summarize a chapter in your own words."; break;
+                    case 9: pillar = 'Mind'; task = "New Skill Mini-Lesson: Watch a short tutorial on something new (e.g., drawing, simple coding)."; break;
                     case 0: pillar = 'Body'; task = "Strength Starter: 2 sets of 10 squats, 20-second plank."; break;
                     default: pillar = 'Mind'; task = "Daily check-in: How are you feeling today?"; break;
                 }
@@ -910,7 +972,7 @@
                 ]
             },
             {
-                id: 'mind', icon: '🧠', title: 'Sharpen Your Mind', content: "Make learning more effective. Keep a dedicated, organized study space. Use the Pomodoro Technique (25 mins focus, 5 mins break) to avoid burnout. Review your notes for 15 minutes each evening to retain information.",
+                id: 'mind', icon: '�', title: 'Sharpen Your Mind', content: "Make learning more effective. Keep a dedicated, organized study space. Use the Pomodoro Technique (25 mins focus, 5 mins break) to avoid burnout. Review your notes for 15 minutes each evening to retain information.",
                 tasks: [
                     "Organize your study space for 15 minutes.",
                     "Use the Pomodoro Technique (25 min focus, 5 min break) for a study session.",
@@ -1300,12 +1362,16 @@
                 AppState.bestStreak = parsedState.bestStreak || 0;
                 // Ensure mood and highlight are loaded into dailyActivityMap
                 AppState.dailyActivityMap = parsedState.dailyActivityMap || {}; 
+                // Initialize new fields for existing dailyActivityMap entries
                 for (const date in AppState.dailyActivityMap) {
                     if (typeof AppState.dailyActivityMap[date].mood === 'undefined') {
                         AppState.dailyActivityMap[date].mood = '';
                     }
                     if (typeof AppState.dailyActivityMap[date].highlight === 'undefined') {
                         AppState.dailyActivityMap[date].highlight = '';
+                    }
+                    if (typeof AppState.dailyActivityMap[date].missedReason === 'undefined') { // New field
+                        AppState.dailyActivityMap[date].missedReason = '';
                     }
                 }
 
@@ -1318,10 +1384,12 @@
                 AppState.nextDailyFocusBonus = parsedState.nextDailyFocusBonus || 0;
                 AppState.restDaysAvailable = parsedState.restDaysAvailable || 0;
                 AppState.userGoals = parsedState.userGoals || {};
+                AppState.globalGoals = parsedState.globalGoals || []; // Load global goals
                 AppState.earnedBadges = new Set(parsedState.earnedBadges || []);
                 AppState.purchasedShopItems = new Set(parsedState.purchasedShopItems || []); // Load purchased items
                 AppState.lastSummaryDate = parsedState.lastSummaryDate || null;
                 AppState.affirmations = parsedState.affirmations || AppState.affirmations; // Load custom or use default
+                AppState.userAffirmations = parsedState.userAffirmations || []; // Load user-added affirmations
                 
                 // Personalization State
                 AppState.userName = parsedState.userName || null;
@@ -1356,6 +1424,8 @@
                 // Only break streak if today is not the very first day (day 1)
                 if (AppState.today > 1 && (!yesterdayActivity || !yesterdayActivity.main)) {
                     AppState.currentStreak = 0;
+                    // Prompt for "Why Missed?" if previous day was missed
+                    showMissedReasonModal(yesterdayFormatted);
                 }
 
                 AppState.lastVisitDate = todayFormatted;
@@ -1380,6 +1450,7 @@
                 nextDailyFocusBonus: AppState.nextDailyFocusBonus,
                 restDaysAvailable: AppState.restDaysAvailable,
                 userGoals: AppState.userGoals,
+                globalGoals: AppState.globalGoals, // Save global goals
                 earnedBadges: Array.from(AppState.earnedBadges),
                 purchasedShopItems: Array.from(AppState.purchasedShopItems), // Save purchased items
                 lastSummaryDate: AppState.lastSummaryDate,
@@ -1392,6 +1463,7 @@
                 startDate: AppState.startDate ? formatDate(AppState.startDate) : null,
                 lastVisitDate: AppState.lastVisitDate,
                 affirmations: AppState.affirmations,
+                userAffirmations: AppState.userAffirmations, // Save user affirmations
             };
             localStorage.setItem('glowUpAppState', JSON.stringify(stateToSave));
         }
@@ -1439,6 +1511,8 @@
             } else if (viewId === 'daily-focus') {
                 renderDailyFocus();
                 startCountdownTimer(); // Ensure timer starts/restarts
+            } else if (viewId === 'goals') { // New Goals view rendering
+                renderGlobalGoals();
             } else if (viewId === 'shop') {
                 renderShop();
             } else if (viewId === 'achievements') {
@@ -1473,13 +1547,47 @@
                 checkbox.addEventListener('change', (e) => {
                     const label = e.target.closest('label');
                     if (e.target.checked) {
+                        AppState.selectedSkills.add(e.target.dataset.skillId);
                         label.classList.add('selected');
                     } else {
+                        AppState.selectedSkills.delete(e.target.dataset.skillId);
                         label.classList.remove('selected');
                     }
+                    saveState(); // Save selected skills immediately
                 });
             });
+
+            renderUserAffirmations(); // Render user-added affirmations in personalization menu
         }
+
+        function renderUserAffirmations() {
+            const userAffirmationsList = document.getElementById('user-affirmations-list');
+            if (!userAffirmationsList) return;
+
+            userAffirmationsList.innerHTML = '';
+            if (AppState.userAffirmations.length === 0) {
+                userAffirmationsList.innerHTML = '<p class="text-slate-500 italic">No custom affirmations yet.</p>';
+            } else {
+                AppState.userAffirmations.forEach((affirmation, index) => {
+                    userAffirmationsList.innerHTML += `
+                        <div class="flex items-center justify-between bg-slate-50 p-2 rounded-md">
+                            <span>"${affirmation}"</span>
+                            <button data-index="${index}" class="remove-affirmation-btn text-red-500 hover:text-red-700 text-lg leading-none">&times;</button>
+                        </div>
+                    `;
+                });
+                userAffirmationsList.querySelectorAll('.remove-affirmation-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const indexToRemove = parseInt(e.target.dataset.index);
+                        AppState.userAffirmations.splice(indexToRemove, 1);
+                        saveState();
+                        renderUserAffirmations();
+                        showMessage('Affirmation removed!');
+                    });
+                });
+            }
+        }
+
 
         async function renderDashboard() {
             const currentChallengeDay = AppState.today > TOTAL_CHALLENGE_DAYS ? TOTAL_CHALLENGE_DAYS : AppState.today;
@@ -1513,29 +1621,37 @@
                 completeBtn.classList.add('gradient-button', 'hover:bg-amber-600');
             }
 
-            // Daily Affirmation
+            // Daily Affirmation (Smart Affirmation Generation)
             const affirmationDisplay = document.getElementById('daily-affirmation');
-            if (AppState.affirmations && AppState.affirmations.length > 0) {
-                const randomAffirmation = AppState.affirmations[Math.floor(Math.random() * AppState.affirmations.length)];
-                affirmationDisplay.textContent = randomAffirmation;
+            const allAffirmations = [...AppState.affirmations, ...AppState.userAffirmations];
+
+            if (allAffirmations.length > 0) {
+                let affirmationText = allAffirmations[Math.floor(Math.random() * allAffirmations.length)];
+                // Simple smart affirmation logic:
+                if (AppState.currentStreak > 0 && AppState.currentStreak % 7 === 0) {
+                    affirmationText = `You're rocking a ${AppState.currentStreak}-day streak! Keep that momentum going! 🔥`;
+                } else if (AppState.dailyActivityMap[formatDate(new Date())]?.mood === '😔' || AppState.dailyActivityMap[formatDate(new Date())]?.mood === '😡') {
+                    affirmationText = "It's okay to have tough days. Your resilience shines through! You got this. 💪";
+                }
+                affirmationDisplay.textContent = affirmationText;
             } else {
                 affirmationDisplay.textContent = 'Your daily boost of positivity...';
             }
 
             // Mood Tracker & Daily Highlight
             const todayFormatted = formatDate(new Date());
-            let todayActivity = AppState.dailyActivityMap[todayFormatted] || { main: false, focus: false, mood: '', highlight: '' };
+            let todayActivity = AppState.dailyActivityMap[todayFormatted] || { main: false, focus: false, mood: '', highlight: '', missedReason: '' };
             document.getElementById('mood-select').value = todayActivity.mood || '';
             document.getElementById('daily-highlight-input').value = todayActivity.highlight || '';
 
             // Add event listeners for mood and highlight to save state immediately
             document.getElementById('mood-select').onchange = (e) => {
-                AppState.dailyActivityMap[todayFormatted] = AppState.dailyActivityMap[todayFormatted] || { main: false, focus: false, mood: '', highlight: '' };
+                AppState.dailyActivityMap[todayFormatted] = AppState.dailyActivityMap[todayFormatted] || { main: false, focus: false, mood: '', highlight: '', missedReason: '' };
                 AppState.dailyActivityMap[todayFormatted].mood = e.target.value;
                 saveState();
             };
             document.getElementById('daily-highlight-input').oninput = (e) => { // Use oninput for real-time saving
-                AppState.dailyActivityMap[todayFormatted] = AppState.dailyActivityMap[todayFormatted] || { main: false, focus: false, mood: '', highlight: '' };
+                AppState.dailyActivityMap[todayFormatted] = AppState.dailyActivityMap[todayFormatted] || { main: false, focus: false, mood: '', highlight: '', missedReason: '' };
                 AppState.dailyActivityMap[todayFormatted].highlight = e.target.value;
                 saveState();
             };
@@ -1561,10 +1677,8 @@
             const upcomingMissionsList = document.getElementById('upcoming-missions-list');
             if (upcomingMissionsList) { // Check if element exists
                 upcomingMissionsList.innerHTML = '';
-                const startIndex = AppState.today; // Start from the next day after current
-                const numToShow = 3;
                 // Filter out already completed days from upcoming missions logic
-                const upcoming = dailyTasks.filter(task => !AppState.completedDays.has(task.day) && task.day >= AppState.today).slice(0, numToShow);
+                const upcoming = dailyTasks.filter(task => !AppState.completedDays.has(task.day) && task.day > AppState.today).slice(0, 3); // Get next 3 uncompleted days
 
                 if (upcoming.length > 0) {
                     upcoming.forEach(mission => {
@@ -1586,107 +1700,58 @@
             if (quickGlanceContent) { // Check if element exists
                 quickGlanceContent.innerHTML = '';
 
-                let hasContent = false;
-
+                let hasPillarContent = false;
                 if (pillarsData.length > 0) {
-                    quickGlanceContent.innerHTML += `<h4 class="font-semibold text-md text-slate-700 mt-4 mb-2">Pillars:</h4>`;
-                    pillarsData.forEach(pillar => {
+                    const pillarSummaryHtml = pillarsData.map(pillar => {
                         const completedPillarTasks = AppState.completedPillarTasks[pillar.id] ? AppState.completedPillarTasks[pillar.id].length : 0;
                         const totalPillarTasks = pillar.tasks.length;
                         const pillarProgress = totalPillarTasks > 0 ? Math.round((completedPillarTasks / totalPillarTasks) * 100) : 0;
-                        quickGlanceContent.innerHTML += `
+                        return `
                             <div class="flex items-center justify-between text-sm">
                                 <span class="flex items-center gap-2">${pillar.icon} ${pillar.title}</span>
                                 <span class="font-medium text-amber-600">${pillarProgress}%</span>
                             </div>
                         `;
-                    });
-                    hasContent = true;
+                    }).join('');
+                    quickGlanceContent.innerHTML += `<h4 class="font-semibold text-md text-slate-700 mb-2">Pillars:</h4>${pillarSummaryHtml}`;
+                    hasPillarContent = true;
                 }
 
+                let hasSkillContent = false;
                 if (AppState.selectedSkills.size > 0) {
-                    quickGlanceContent.innerHTML += `<h4 class="font-semibold text-md text-slate-700 mt-4 mb-2">Skills:</h4>`;
-                    Array.from(AppState.selectedSkills).forEach(skillId => {
+                    const skillSummaryHtml = Array.from(AppState.selectedSkills).map(skillId => {
                         const skill = skillsData.find(s => s.id === skillId);
                         if (skill) {
                             const completedSkillTasks = AppState.completedSkillTasks[skill.id] ? AppState.completedSkillTasks[skill.id].length : 0;
                             const totalSkillTasks = skill.tasks.length;
                             const skillProgress = totalSkillTasks > 0 ? Math.round((completedSkillTasks / totalSkillTasks) * 100) : 0;
-                            quickGlanceContent.innerHTML += `
+                            return `
                                 <div class="flex items-center justify-between text-sm">
                                     <span class="flex items-center gap-2">${skill.icon} ${skill.title}</span>
                                     <span class="font-medium text-amber-600">${skillProgress}%</span>
                                 </div>
                             `;
                         }
-                    });
-                    hasContent = true;
+                        return '';
+                    }).join('');
+                    quickGlanceContent.innerHTML += `<h4 class="font-semibold text-md text-slate-700 mt-4 mb-2">Skills:</h4>${skillSummaryHtml}`;
+                    hasSkillContent = true;
                 }
 
-                if (!hasContent) {
-                    quickGlanceContent.innerHTML = '<p class="text-sm italic text-slate-500">Select skills in personalization for more insights!</p>';
+                if (!hasPillarContent && !hasSkillContent) {
+                    quickGlanceContent.innerHTML = '<p class="text-sm italic text-slate-500">No pillar or skill progress to show yet.</p>';
                 }
             }
-
 
             // Render progress chart
             renderProgressChart();
         }
 
-        async function fetchDailyTip(pillarName, targetElementId = 'daily-affirmation') {
-            const tipElement = document.getElementById(targetElementId);
-            if (!tipElement) {
-                console.error(`Target element with ID '${targetElementId}' not found for daily tip.`);
-                return;
-            }
-            const originalText = tipElement.textContent;
-            
-            // If using affirmations, randomly pick one instead of calling LLM every time
-            if (AppState.affirmations && AppState.affirmations.length > 0) {
-                const randomAffirmation = AppState.affirmations[Math.floor(Math.random() * AppState.affirmations.length)];
-                tipElement.textContent = randomAffirmation;
-                return; // Exit as we've used an internal affirmation
-            }
-
-            // Fallback to LLM if no internal affirmations
-            tipElement.textContent = 'Loading a fresh tip for you...';
-
-            let promptContext = '';
-            if (AppState.selectedSkills.size > 0) {
-                const skillsArray = Array.from(AppState.selectedSkills).map(id => skillsData.find(s => s.id === id)?.title || id);
-                promptContext = `Focus on one of these skills if relevant: ${skillsArray.join(', ')}.`;
-            }
-
-            let chatHistory = [];
-            chatHistory.push({ role: "user", parts: [{ text: `Provide a very short (max 2 sentences) motivational tip or quote for the '${pillarName}' pillar of self-improvement. ${promptContext} Make it inspiring and action-oriented for an 8th grader.` }] });
-            const payload = { contents: chatHistory };
-            const apiKey = ""; 
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const result = await response.json();
-                if (result.candidates && result.candidates.length > 0 &&
-                    result.candidates[0].content && result.candidates[0].content.parts &&
-                    result.candidates[0].content.parts.length > 0) {
-                    const text = result.candidates[0].content.parts[0].text;
-                    tipElement.textContent = text;
-                } else {
-                    tipElement.textContent = originalText;
-                    console.error('LLM response structure unexpected:', result);
-                }
-            } catch (error) {
-                tipElement.textContent = originalText;
-                console.error('Error fetching daily tip:', error);
-            }
-        }
+        // Removed fetchDailyTip as it's replaced by a more dynamic approach within renderDashboard
 
         function renderCalendar() {
             const grid = document.getElementById('calendar-grid');
+            if (!grid) return; // Defensive check
             grid.innerHTML = '';
             dailyTasks.forEach(task => {
                 const dayEl = document.createElement('div');
@@ -1723,6 +1788,7 @@
         
         function renderPillars() {
             const grid = document.getElementById('pillars-grid');
+            if (!grid) return; // Defensive check
             grid.innerHTML = '';
             pillarsData.forEach(pillar => {
                 grid.innerHTML += `
@@ -1749,6 +1815,7 @@
 
             document.getElementById('pillars').classList.add('hidden');
             const detailView = document.getElementById('pillar-detail-view');
+            if (!detailView) return; // Defensive check
             detailView.classList.remove('hidden');
 
             document.getElementById('pillar-detail-icon').textContent = pillar.icon;
@@ -1756,6 +1823,7 @@
             document.getElementById('pillar-detail-content').textContent = pillar.content;
 
             const tasksContainer = document.getElementById('pillar-detail-tasks');
+            if (!tasksContainer) return; // Defensive check
             tasksContainer.innerHTML = '';
             
             const completedTasks = AppState.completedPillarTasks[pillar.id] || [];
@@ -1773,8 +1841,11 @@
             });
 
             const progress = pillar.tasks.length > 0 ? Math.round((completedTasks.length / pillar.tasks.length) * 100) : 0;
-            document.getElementById('pillar-progress-text').textContent = `${progress}%`;
-            document.getElementById('pillar-progress-bar').style.width = `${progress}%`;
+            const pillarProgressText = document.getElementById('pillar-progress-text');
+            const pillarProgressBar = document.getElementById('pillar-progress-bar');
+            if (pillarProgressText) pillarProgressText.textContent = `${progress}%`;
+            if (pillarProgressBar) pillarProgressBar.style.width = `${progress}%`;
+
 
             tasksContainer.querySelectorAll('.pillar-task-btn').forEach(button => {
                 button.addEventListener('click', (e) => {
@@ -1803,6 +1874,7 @@
 
         function renderSkills() {
             const grid = document.getElementById('skills-grid');
+            if (!grid) return; // Defensive check
             grid.innerHTML = '';
             skillsData.forEach(skill => {
                 grid.innerHTML += `
@@ -1830,6 +1902,7 @@
 
             document.getElementById('skills').classList.add('hidden');
             const detailView = document.getElementById('skill-detail-view');
+            if (!detailView) return; // Defensive check
             detailView.classList.remove('hidden');
 
             document.getElementById('skill-detail-icon').textContent = skill.icon;
@@ -1837,6 +1910,7 @@
             document.getElementById('skill-detail-content').textContent = skill.content;
 
             const tasksContainer = document.getElementById('skill-detail-tasks');
+            if (!tasksContainer) return; // Defensive check
             tasksContainer.innerHTML = '';
             
             const completedTasks = AppState.completedSkillTasks[skill.id] || [];
@@ -1854,8 +1928,11 @@
             });
 
             const progress = skill.tasks.length > 0 ? Math.round((completedTasks.length / skill.tasks.length) * 100) : 0;
-            document.getElementById('skill-progress-text').textContent = `${progress}%`;
-            document.getElementById('skill-progress-bar').style.width = `${progress}%`;
+            const skillProgressText = document.getElementById('skill-progress-text');
+            const skillProgressBar = document.getElementById('skill-progress-bar');
+            if (skillProgressText) skillProgressText.textContent = `${progress}%`;
+            if (skillProgressBar) skillProgressBar.style.width = `${progress}%`;
+
 
             tasksContainer.querySelectorAll('.skill-task-btn').forEach(button => {
                 button.addEventListener('click', (e) => {
@@ -1898,7 +1975,7 @@
                     goalsList.innerHTML += `
                         <div class="goal-item ${goal.completed ? 'completed' : ''}">
                             <label class="flex items-center flex-grow cursor-pointer">
-                                <input type="checkbox" class="goal-checkbox mr-3" data-goal-id="${goal.id}" ${goal.completed ? 'checked disabled' : ''}>
+                                <input type="checkbox" class="goal-checkbox mr-3" data-goal-id="${goal.id}" data-entity-id="${entityId}" ${goal.completed ? 'checked disabled' : ''}>
                                 <span class="goal-text">${goal.text}</span>
                             </label>
                         </div>
@@ -1930,6 +2007,7 @@
             goalsList.querySelectorAll('.goal-checkbox').forEach(checkbox => {
                 checkbox.addEventListener('change', (e) => {
                     const goalId = e.target.dataset.goalId;
+                    const entityId = e.target.dataset.entityId;
                     const goal = AppState.userGoals[entityId].find(g => g.id === goalId);
                     if (goal && e.target.checked) {
                         goal.completed = true;
@@ -1938,6 +2016,65 @@
                         checkAchievements(); // Check for new achievements
                         renderGoalsForEntity(entityId, listId, inputId, buttonId); // Re-render to update class
                         showMessage('Goal completed! Great job!');
+                    }
+                });
+            });
+        }
+
+        // New function for global goals section
+        function renderGlobalGoals() {
+            const globalGoalsList = document.getElementById('global-goals-list');
+            if (!globalGoalsList) {
+                console.error("Global goals list element not found.");
+                return;
+            }
+            globalGoalsList.innerHTML = '';
+
+            if (AppState.globalGoals.length === 0) {
+                globalGoalsList.innerHTML = '<p class="text-slate-500 italic text-sm">No global goals set yet. Add your first one!</p>';
+            } else {
+                AppState.globalGoals.forEach(goal => {
+                    globalGoalsList.innerHTML += `
+                        <div class="goal-item ${goal.completed ? 'completed' : ''}">
+                            <label class="flex items-center flex-grow cursor-pointer">
+                                <input type="checkbox" class="goal-checkbox mr-3" data-goal-id="${goal.id}" data-global="true" ${goal.completed ? 'checked disabled' : ''}>
+                                <span class="goal-text">${goal.text}</span>
+                            </label>
+                        </div>
+                    `;
+                });
+            }
+
+            const addGlobalGoalButton = document.getElementById('add-global-goal-btn');
+            const addGlobalGoalInput = document.getElementById('add-global-goal-input');
+
+            if (addGlobalGoalButton && addGlobalGoalInput) {
+                addGlobalGoalButton.onclick = () => {
+                    const goalText = addGlobalGoalInput.value.trim();
+                    if (goalText) {
+                        const newGoal = { id: generateUUID(), text: goalText, completed: false };
+                        AppState.globalGoals.push(newGoal);
+                        addGlobalGoalInput.value = '';
+                        saveState();
+                        renderGlobalGoals(); // Re-render global goals
+                        showMessage('Global Goal added!');
+                    } else {
+                        showMessage('Please enter a global goal!');
+                    }
+                };
+            }
+
+            globalGoalsList.querySelectorAll('.goal-checkbox[data-global="true"]').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const goalId = e.target.dataset.goalId;
+                    const goal = AppState.globalGoals.find(g => g.id === goalId);
+                    if (goal && e.target.checked) {
+                        goal.completed = true;
+                        e.target.disabled = true;
+                        saveState();
+                        checkAchievements();
+                        renderGlobalGoals();
+                        showMessage('Global Goal completed! Awesome!');
                     }
                 });
             });
@@ -2051,7 +2188,7 @@
                 AppState.dailyFocusCompletedToday = true;
                 
                 const todayFormatted = formatDate(new Date());
-                AppState.dailyActivityMap[todayFormatted] = AppState.dailyActivityMap[todayFormatted] || { main: false, focus: false, mood: '', highlight: '' };
+                AppState.dailyActivityMap[todayFormatted] = AppState.dailyActivityMap[todayFormatted] || { main: false, focus: false, mood: '', highlight: '', missedReason: '' };
                 AppState.dailyActivityMap[todayFormatted].focus = true; // Mark daily focus as completed for heatmap
 
                 const tokensEarned = TOKEN_FOR_DAILY_FOCUS_COMPLETION + AppState.nextDailyFocusBonus;
@@ -2125,16 +2262,16 @@
                         break;
                     case 'instant-tip':
                         // Fetch a new tip, then display it in the message box for this specific purchase
-                        let randomPillarForInstantTip = pillarsData[Math.floor(Math.random() * pillarsData.length)].title;
-                        if (AppState.selectedSkills.size > 0) {
+                        let randomPillarOrSkillForInstantTip = pillarsData[Math.floor(Math.random() * pillarsData.length)].title;
+                        if (AppState.selectedSkills.size > 0 && Math.random() < 0.5) { // 50% chance to pick a skill
                             const selectedSkillIds = Array.from(AppState.selectedSkills);
                             const randomSkillId = selectedSkillIds[Math.floor(Math.random() * selectedSkillIds.length)];
                             const skill = skillsData.find(s => s.id === randomSkillId);
-                            randomPillarForInstantTip = skill ? skill.title : randomPillarForInstantTip; // Use skill title if found
+                            randomPillarOrSkillForInstantTip = skill ? skill.title : randomPillarOrSkillForInstantTip;
                         }
                         
                         let instantTipChatHistory = [];
-                        instantTipChatHistory.push({ role: "user", parts: [{ text: `Provide a very short (max 2 sentences) instant motivational tip or quote related to "${randomPillarForInstantTip}". Make it inspiring and action-oriented for an 8th grader. Do not include phrases like 'Daily Tip:' or 'Here's your tip:'.` }] });
+                        instantTipChatHistory.push({ role: "user", parts: [{ text: `Provide a very short (max 2 sentences) instant motivational tip or quote related to "${randomPillarOrSkillForInstantTip}". Make it inspiring and action-oriented for an 8th grader. Do not include phrases like 'Daily Tip:' or 'Here's your tip:'.` }] });
                         const instantTipPayload = { contents: instantTipChatHistory };
                         const instantTipApiKey = ""; 
                         const instantTipApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${instantTipApiKey}`;
@@ -2323,6 +2460,39 @@
             }, 3000);
         }
 
+        // --- Why Missed Modal ---
+        function showMissedReasonModal(dateKey) {
+            const modal = document.getElementById('missed-reason-modal');
+            const input = document.getElementById('missed-reason-input');
+            const submitBtn = document.getElementById('submit-missed-reason-btn');
+
+            if (!modal || !input || !submitBtn) {
+                console.error("Missing elements for missed reason modal.");
+                return;
+            }
+
+            input.value = AppState.dailyActivityMap[dateKey]?.missedReason || ''; // Pre-fill if already exists
+            modal.classList.remove('hidden');
+
+            // Store the dateKey in the button for access in event listener
+            submitBtn.dataset.dateKey = dateKey;
+
+            // Remove previous event listener to prevent multiple calls
+            // This is a common pattern to ensure only one listener is active for dynamic elements
+            const oldSubmitBtn = submitBtn.cloneNode(true);
+            submitBtn.parentNode.replaceChild(oldSubmitBtn, submitBtn);
+            
+            document.getElementById('submit-missed-reason-btn').addEventListener('click', (e) => {
+                const currentMissedDateKey = e.target.dataset.dateKey;
+                AppState.dailyActivityMap[currentMissedDateKey] = AppState.dailyActivityMap[currentMissedDateKey] || { main: false, focus: false, mood: '', highlight: '', missedReason: '' };
+                AppState.dailyActivityMap[currentMissedDateKey].missedReason = input.value.trim();
+                saveState();
+                modal.classList.add('hidden');
+                showMessage('Reason for missed day saved.');
+            });
+        }
+
+
         // --- Confetti Effect ---
         function showConfetti() {
             const confettiContainer = document.createElement('div');
@@ -2333,7 +2503,7 @@
             confettiContainer.style.height = '100%';
             confettiContainer.style.pointerEvents = 'none';
             confettiContainer.style.zIndex = '1000';
-            document.body.appendChild(confettiContainer); // FIXED: Removed 'conf' typo
+            document.body.appendChild(confettiContainer); 
 
             const colors = ['#f59e0b', '#fbbf24', '#a7f3d0', '#d1fae5', '#8b5cf6', '#c4b5fd']; // Amber, Green, Violet shades
 
@@ -2433,14 +2603,18 @@
                 showMessage('Achievement Unlocked: Pillar Powerhouse! 🏛️');
                 newAchievementEarned = true;
             }
-            // Goal Getter (First completed goal)
+            // Goal Getter (First completed goal - checks both userGoals and globalGoals)
             let anyGoalCompleted = false;
-            for (const entityId in AppState.userGoals) {
+            for (const entityId in AppState.userGoals) { // Check pillar/skill goals
                 if (AppState.userGoals[entityId].some(goal => goal.completed)) {
                     anyGoalCompleted = true;
                     break;
                 }
             }
+            if (!anyGoalCompleted && AppState.globalGoals.some(goal => goal.completed)) { // Check global goals if no other goals completed yet
+                anyGoalCompleted = true;
+            }
+
             if (anyGoalCompleted && !AppState.earnedBadges.has('goal-getter')) {
                 AppState.earnedBadges.add('goal-getter');
                 showMessage('Achievement Unlocked: Goal Getter! 🎯');
@@ -2517,6 +2691,25 @@
                 updateView(AppState.currentView); 
             }
 
+            // Add Affirmation Button Listener
+            const addAffirmationBtn = document.getElementById('add-affirmation-btn');
+            const customAffirmationInput = document.getElementById('custom-affirmation-input');
+            if (addAffirmationBtn && customAffirmationInput) {
+                addAffirmationBtn.addEventListener('click', () => {
+                    const newAffirmation = customAffirmationInput.value.trim();
+                    if (newAffirmation) {
+                        AppState.userAffirmations.push(newAffirmation);
+                        customAffirmationInput.value = '';
+                        saveState();
+                        renderUserAffirmations();
+                        showMessage('Affirmation added!');
+                    } else {
+                        showMessage('Please enter an affirmation!');
+                    }
+                });
+            }
+
+
             document.getElementById('start-glow-up-btn').addEventListener('click', () => {
                 const userNameInput = document.getElementById('user-name').value.trim();
                 if (!userNameInput) {
@@ -2526,10 +2719,7 @@
                 AppState.userName = userNameInput;
                 AppState.difficulty = document.getElementById('difficulty-select').value;
                 
-                AppState.selectedSkills.clear();
-                document.querySelectorAll('#personalization-skills-grid input[type="checkbox"]:checked').forEach(checkbox => {
-                    AppState.selectedSkills.add(checkbox.dataset.skillId);
-                });
+                // Selected skills are already saved by individual checkbox listeners
                 
                 // Initialize daily focus tasks for the first time after personalization
                 AppState.dailyFocusTasks = []; 
@@ -2591,8 +2781,7 @@
                 updateView('daily-focus');
             });
             document.getElementById('view-active-goals-btn').addEventListener('click', () => {
-                showMessage('Feature coming soon: Direct view of all active goals!');
-                // Implement a dedicated view for all goals here later if needed
+                updateView('goals'); // Direct to the new global goals section
             });
 
 
@@ -2609,9 +2798,21 @@
                     showMessage('You' + "'" + 've already completed today' + "'" + 's mission!');
                     return;
                 }
+                
+                // If the user tries to complete a PAST day, prompt for a reason
+                // Note: The logic here is for the *current* mission button. 
+                // If a past day on the calendar grid is clicked, it only shows the modal,
+                // it doesn't mark it complete.
+                if (currentChallengeDay < AppState.today) {
+                    showMissedReasonModal(formatDate(new Date(AppState.startDate.getTime() + ( (currentChallengeDay - 1) * 24 * 60 * 60 * 1000) )));
+                    showMessage('Please tell us why this day was missed.');
+                    // Do NOT mark as complete here, wait for reason submission if desired
+                    return; // Exit to prevent completion without reason
+                }
+
 
                 // Update daily activity map for today
-                AppState.dailyActivityMap[todayFormatted] = AppState.dailyActivityMap[todayFormatted] || { main: false, focus: false, mood: '', highlight: '' };
+                AppState.dailyActivityMap[todayFormatted] = AppState.dailyActivityMap[todayFormatted] || { main: false, focus: false, mood: '', highlight: '', missedReason: '' };
                 AppState.dailyActivityMap[todayFormatted].main = true; // Mark main mission as completed for heatmap
 
                 // Streak logic
@@ -2644,3 +2845,4 @@
 
 </body>
 </html>
+�
