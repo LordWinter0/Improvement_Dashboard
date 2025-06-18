@@ -78,7 +78,7 @@
             font-weight: 500;
             color: #475569;
         }
-        .skill-task, .pillar-task, .daily-skill-task-item {
+        .skill-task, .pillar-task, .daily-skill-task-item, .goal-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -88,13 +88,13 @@
             margin-bottom: 0.5rem;
             border: 1px solid #fcd34d; /* Amber-300 border */
         }
-        .skill-task.completed, .pillar-task.completed, .daily-skill-task-item.completed {
+        .skill-task.completed, .pillar-task.completed, .daily-skill-task-item.completed, .goal-item.completed {
             background-color: #d1fae5; /* Green-100 */
             color: #065f46; /* Green-800 */
             text-decoration: line-through;
             border-color: #34d399; /* Green-400 border */
         }
-        .skill-task-btn, .pillar-task-btn, .shop-buy-btn, .daily-quest-btn, .daily-skill-task-checkbox {
+        .skill-task-btn, .pillar-task-btn, .shop-buy-btn, .daily-quest-btn, .daily-skill-task-checkbox, .goal-checkbox {
             padding: 0.25rem 0.75rem;
             font-size: 0.875rem;
             font-weight: 600;
@@ -102,7 +102,7 @@
             transition: all 0.2s ease;
             white-space: nowrap; /* Prevent button text from wrapping */
         }
-        .daily-skill-task-checkbox {
+        .daily-skill-task-checkbox, .goal-checkbox {
             width: 1.5rem;
             height: 1.5rem;
             min-width: 1.5rem;
@@ -110,15 +110,24 @@
             accent-color: #f59e0b;
             cursor: pointer;
         }
-        .skill-task-btn:not(:disabled), .pillar-task-btn:not(:disabled), .shop-buy-btn:not(:disabled), .daily-quest-btn:not(:disabled) {
+        .skill-task-btn:not(:disabled), .pillar-task-btn:not(:disabled), .shop-buy-btn:not(:disabled) {
             background-color: #fcd34d; /* Amber-300 */
             color: #78350f; /* Amber-900 */
             box-shadow: 0 2px 5px rgba(252, 211, 77, 0.3); /* Initial shadow */
+        }
+        .daily-quest-btn:not(:disabled) {
+            background-image: linear-gradient(to right, #f59e0b 0%, #fbbf24 100%);
+            color: white;
+            box-shadow: 0 2px 5px rgba(245, 158, 11, 0.3);
         }
         .skill-task-btn:not(:disabled):hover, .pillar-task-btn:not(:disabled):hover, .shop-buy-btn:not(:disabled):hover, .daily-quest-btn:not(:disabled):hover {
             background-color: #fbbf24; /* Amber-400 */
             box-shadow: 0 4px 8px rgba(252, 211, 77, 0.5); /* More pronounced shadow on hover */
             transform: translateY(-1px);
+        }
+        .daily-quest-btn:not(:disabled):hover {
+            background-position: right center; /* Change background position on hover */
+            box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
         }
         .skill-task-btn:disabled, .pillar-task-btn:disabled, .shop-buy-btn:disabled, .daily-quest-btn:disabled {
             background-color: #a7f3d0; /* Green-200 */
@@ -225,6 +234,66 @@
             font-size: 1.5rem;
             line-height: 1;
         }
+
+        /* Calendar Heatmap Colors */
+        .day-cell.completed-all {
+            background-color: #a7f3d0; /* Green-200 */
+            color: #065f46;
+        }
+        .day-cell.completed-main {
+            background-color: #d1fae5; /* Green-100 */
+            color: #065f46;
+        }
+        .day-cell.completed-focus {
+            background-color: #ecfdf5; /* Green-50 */
+            color: #065f46;
+        }
+        .day-cell.missed {
+            background-color: #fee2e2; /* Red-100 */
+            color: #b91c1c;
+        }
+
+        /* Goals specific styles */
+        .goals-section {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
+        }
+        .add-goal-input {
+            width: calc(100% - 70px); /* Adjust width to fit button */
+            padding: 0.6rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            margin-right: 0.5rem;
+        }
+        .add-goal-btn {
+            background-color: #a78bfa; /* Violet-400 */
+            color: white;
+            padding: 0.6rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: background-color 0.2s ease;
+        }
+        .add-goal-btn:hover {
+            background-color: #8b5cf6; /* Violet-500 */
+        }
+        .goal-item {
+            background-color: #ede9fe; /* Violet-50 */
+            border-color: #c4b5fd; /* Violet-200 */
+        }
+        .goal-item.completed {
+            background-color: #d1fae5;
+            border-color: #34d399;
+        }
+        .goal-text {
+            flex-grow: 1;
+            margin-left: 0.5rem;
+            color: #4c1d95; /* Violet-900 */
+        }
+        .goal-item.completed .goal-text {
+            color: #065f46;
+        }
     </style>
 </head>
 <body class="text-slate-700">
@@ -276,6 +345,7 @@
                 <a data-view="skills" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">Skills</a>
                 <a data-view="daily-focus" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">Daily Focus</a>
                 <a data-view="shop" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">Shop</a>
+                <a data-view="achievements" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">Badges</a>
                 <a data-view="schedule" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">Daily Schedule</a>
             </nav>
 
@@ -300,7 +370,16 @@
                                 <p id="daily-tip" class="text-amber-800 text-base italic">Loading a fresh tip for you...</p>
                             </div>
                             
-                            <button id="complete-today-btn" class="w-full md:w-auto gradient-button text-white font-bold py-3 px-6 rounded-lg hover:bg-amber-600 transition-all duration-300 shadow-md">Mark as Complete</button>
+                            <div class="flex justify-between items-center mt-6">
+                                <span class="token-display-box text-sm">
+                                    <span class="icon">🔥</span> Current Streak: <span id="current-streak">0</span>
+                                </span>
+                                <span class="token-display-box text-sm">
+                                    <span class="icon">🏆</span> Best Streak: <span id="best-streak">0</span>
+                                </span>
+                            </div>
+
+                            <button id="complete-today-btn" class="w-full md:w-auto gradient-button text-white font-bold py-3 px-6 rounded-lg hover:bg-amber-600 transition-all duration-300 shadow-md mt-6">Mark as Complete</button>
                         </div>
                         <div class="bg-white p-6 rounded-2xl shadow-2xl border border-slate-100">
                             <h3 class="font-bold text-xl text-slate-800 mb-4">📊 Progress Tracker</h3>
@@ -352,6 +431,18 @@
                     <div class="w-full bg-slate-200 rounded-full h-2.5 mt-2">
                         <div id="pillar-progress-bar" class="bg-amber-500 h-2.5 rounded-full" style="width: 0%"></div>
                     </div>
+
+                    <!-- Goals Section for Pillar -->
+                    <div class="goals-section">
+                        <h4 class="font-semibold text-xl text-slate-700 mb-3">Your Goals for this Pillar:</h4>
+                        <div id="pillar-goals-list" class="space-y-2 mb-4">
+                            <!-- Goals will be rendered here -->
+                        </div>
+                        <div class="flex">
+                            <input type="text" id="add-pillar-goal-input" class="add-goal-input focus:ring-violet-400 focus:border-violet-400" placeholder="Add a new goal...">
+                            <button id="add-pillar-goal-btn" class="add-goal-btn">Add</button>
+                        </div>
+                    </div>
                 </section>
 
 
@@ -384,6 +475,18 @@
                     <p class="mt-4 text-sm font-medium text-slate-600">Progress: <span id="skill-progress-text" class="font-bold text-amber-600">0%</span> of tasks completed for this skill.</p>
                     <div class="w-full bg-slate-200 rounded-full h-2.5 mt-2">
                         <div id="skill-progress-bar" class="bg-amber-500 h-2.5 rounded-full" style="width: 0%"></div>
+                    </div>
+
+                    <!-- Goals Section for Skill -->
+                    <div class="goals-section">
+                        <h4 class="font-semibold text-xl text-slate-700 mb-3">Your Goals for this Skill:</h4>
+                        <div id="skill-goals-list" class="space-y-2 mb-4">
+                            <!-- Goals will be rendered here -->
+                        </div>
+                        <div class="flex">
+                            <input type="text" id="add-skill-goal-input" class="add-goal-input focus:ring-violet-400 focus:border-violet-400" placeholder="Add a new goal...">
+                            <button id="add-skill-goal-btn" class="add-goal-btn">Add</button>
+                        </div>
                     </div>
                 </section>
 
@@ -426,6 +529,18 @@
                     </div>
                 </section>
 
+                <!-- Achievements / Badges Section -->
+                <section id="achievements" class="view hidden">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-slate-700 mb-2">🏅 Your Achievements 🏅</h2>
+                        <p class="text-slate-500">Milestones on your Glow-Up Journey!</p>
+                    </div>
+                    <div id="badges-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                        <!-- Badges will be rendered here by JS -->
+                        <p class="text-center text-slate-500 italic col-span-full" id="no-badges-msg">No badges earned yet. Keep going!</p>
+                    </div>
+                </section>
+
                 <!-- Daily Schedule Section -->
                 <section id="schedule" class="view hidden">
                     <div class="text-center mb-8">
@@ -458,8 +573,52 @@
 
     <script>
         const TOTAL_CHALLENGE_DAYS = 90;
-        const TOKEN_FOR_DAILY_QUEST = 3; // Tokens gained per daily focus completion
+        const TOKEN_FOR_DAILY_FOCUS_COMPLETION = 3; // Tokens gained per daily focus completion
         const MAX_DAILY_SKILL_TASKS = 3; // Max number of daily skill tasks to present
+
+        // --- Utility Functions (Moved to top for scope) ---
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function getTimeUntilMidnight() {
+            const now = new Date();
+            const midnight = new Date(now);
+            midnight.setHours(24, 0, 0, 0); // Set to next midnight
+            return midnight.getTime() - now.getTime();
+        }
+
+        // Start the countdown timer
+        let countdownInterval; // Declare globally or in a broader scope
+        function startCountdownTimer() {
+            const timerElement = document.getElementById('countdown-timer');
+            if (countdownInterval) clearInterval(countdownInterval); // Clear existing interval
+
+            countdownInterval = setInterval(() => {
+                const timeLeft = getTimeUntilMidnight();
+                if (timeLeft <= 0) {
+                    timerElement.textContent = 'Refreshing now...';
+                    clearInterval(countdownInterval);
+                    // Force a full refresh to get new daily tasks
+                    location.reload(); 
+                } else {
+                    const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                    timerElement.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
 
         const AppState = {
             currentView: 'dashboard',
@@ -469,13 +628,20 @@
             isPersonalized: false,
             today: 1,
             completedDays: new Set(),
+            currentStreak: 0,
+            bestStreak: 0,
+            dailyActivityMap: {},
             completedSkillTasks: {},
             completedPillarTasks: {},
             tokens: 0,
-            dailyFocusTasks: [], // New: Stores the current day's generated skill tasks [{skillId, taskIndex, completed}]
-            dailyFocusCompletedToday: false, // New: Whether today's daily focus is done
-            lastDailyFocusDate: null, // New: Date when last daily focus was generated/completed
+            dailyFocusTasks: [],
+            dailyFocusCompletedToday: false,
+            lastDailyFocusDate: null,
+            nextDailyFocusBonus: 0,
             restDaysAvailable: 0,
+            userGoals: {},
+            earnedBadges: new Set(),
+            lastSummaryDate: null,
             startDate: null,
             lastVisitDate: null
         };
@@ -579,7 +745,7 @@
                 ]
             },
             {
-                id: 'body', icon: '�', title: 'Move Your Body', content: "Get stronger and boost your mood without a gym. Aim for 30 minutes of movement 5 days a week. Combine 15-20 mins of cardio (dancing, jumping jacks) with 10-15 mins of strength (squats, planks, push-ups).",
+                id: 'body', icon: '💪', title: 'Move Your Body', content: "Get stronger and boost your mood without a gym. Aim for 30 minutes of movement 5 days a week. Combine 15-20 mins of cardio (dancing, jumping jacks) with 10-15 mins of strength (squats, planks, push-ups).",
                 tasks: [
                     "Go for a 20-minute brisk walk.",
                     "Do 3 sets of 10 squats.",
@@ -927,23 +1093,50 @@
                 name: 'Rest Day',
                 icon: '🛌',
                 description: 'Skip one daily mission! The day will be marked as complete without doing the task.',
-                cost: 20 // Increased cost
+                cost: 20
             },
             {
-                id: 'tip-boost',
+                id: 'instant-tip',
                 name: 'Instant Tip',
                 icon: '💡',
                 description: 'Get an extra motivational tip right now!',
-                cost: 8 // Increased cost
+                cost: 8
             },
             {
                 id: 'token-bonus',
                 name: 'Token Bonus (Minor)',
                 icon: '✨',
-                description: 'Receive 5 extra Glow Tokens!',
-                cost: 15 // New item
+                description: 'Receive 5 extra Glow Tokens instantly!',
+                cost: 15
+            },
+            {
+                id: 'skill-xp-boost',
+                name: 'Skill XP Boost',
+                icon: '⚡',
+                description: 'Doubles tokens earned from your next Daily Skill Focus completion.',
+                cost: 30
+            },
+            {
+                id: 'mystery-box',
+                name: 'Mystery Box',
+                icon: '🎁',
+                description: 'A surprise reward! What will you get?',
+                cost: 50
             }
         ];
+
+        const badgesData = [
+            { id: 'consistency-streak-7', name: '7-Day Streak', icon: '🔥', description: 'Completed daily missions for 7 days in a row!' },
+            { id: 'consistency-streak-30', name: '30-Day Streak', icon: '🌟', description: 'Maintained consistency for a whole month!' },
+            { id: 'halfway-hero', name: 'Halfway Hero', icon: '🏅', description: 'Reached Day 45 of your 90-day challenge!' },
+            { id: 'challenge-master', name: 'Challenge Master', icon: '👑', description: 'Completed all 90 days of the challenge!' },
+            { id: 'token-tycoon', name: 'Token Tycoon', icon: '💰', description: 'Collected 50 Glow Tokens!' },
+            { id: 'skill-explorer', name: 'Skill Explorer', icon: '🗺️', description: 'Completed 5 tasks across different skills!' },
+            { id: 'pillar-powerhouse', name: 'Pillar Powerhouse', icon: '🏛️', description: 'Completed 5 tasks across different pillars!' },
+            { id: 'goal-getter', name: 'Goal Getter', icon: '🎯', description: 'Completed your first personal goal!' },
+            { id: 'shopaholic', name: 'Shopaholic', icon: '🛍️', description: 'Purchased 3 items from the shop!' }
+        ];
+
 
         const schedulesData = {
             weekday: `
@@ -952,13 +1145,13 @@
                     <li><strong>5:30-6:00 AM:</strong> Wake Up & Hydrate, Stretch, Wash Face, Brush Teeth.</li>
                     <li><strong>6:00-6:30 AM:</strong> Shower, Deodorant, Get Dressed, Fix Hair.</li>
                     <li><strong>6:30-7:00 AM:</strong> Healthy Breakfast, Pack Bag, Fill Water Bottle.</li>
-                    <li><strong>7:00 AM-3:00 PM:</strong> School Time (Participate, stay hydrated).</li>
-                    <li><strong>3:00-4:00 PM:</strong> Arrive Home, Healthy Snack, Rest (no gadgets).</li>
-                    <li><strong>4:00-5:00 PM:</strong> Glow-Up Hour (Workout + Daily Mission).</li>
-                    <li><strong>5:00-6:30 PM:</strong> Homework & Study.</li>
-                    <li><strong>6:30-8:00 PM:</strong> Dinner & Family Time.</li>
-                    <li><strong>8:00-9:00 PM:</strong> Wind Down (Review notes, pick clothes, read, relax).</li>
-                    <li><strong>9:00-9:30 PM:</strong> Final Prep for Bed (No screens, wash face, brush teeth).</li>
+                    <li><strong>7:00 AM-4:30 PM:</strong> School Time (Participate, stay hydrated).</li>
+                    <li><strong>4:30-5:30 PM:</strong> Arrive Home, Healthy Snack, Rest (no gadgets).</li>
+                    <li><strong>5:30-6:30 PM:</strong> Glow-Up Hour (Workout + Daily Mission / Daily Skill Focus).</li>
+                    <li><strong>6:30-7:30 PM:</strong> Homework & Study.</li>
+                    <li><strong>7:30-8:30 PM:</strong> Dinner & Family Time.</li>
+                    <li><strong>8:30-9:30 PM:</strong> Wind Down (Review notes, pick clothes, read, relax).</li>
+                    <li><strong>9:30-10:00 PM:</strong> Final Prep for Bed (No screens, wash face, brush teeth).</li>
                 </ul>
             `,
             weekend: `
@@ -973,88 +1166,145 @@
         };
         
         let progressChartInstance = null;
-        let countdownInterval; // To store the interval ID for the countdown
-
-        // Utility function to format date
-        function formatDate(date) {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
-
-        // Utility function to get time until next midnight
-        function getTimeUntilMidnight() {
-            const now = new Date();
-            const midnight = new Date(now);
-            midnight.setHours(24, 0, 0, 0); // Set to next midnight
-            return midnight.getTime() - now.getTime();
-        }
-
-        // Start the countdown timer
-        function startCountdownTimer() {
-            const timerElement = document.getElementById('countdown-timer');
-            if (countdownInterval) clearInterval(countdownInterval); // Clear existing interval
-
-            countdownInterval = setInterval(() => {
-                const timeLeft = getTimeUntilMidnight();
-                if (timeLeft <= 0) {
-                    timerElement.textContent = 'Refreshing now...';
-                    clearInterval(countdownInterval);
-                    // Force a full refresh to get new daily tasks
-                    location.reload(); 
-                } else {
-                    const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-                    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-                    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-                    timerElement.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-                }
-            }, 1000);
-        }
         
-        function updateView(viewName) {
-            // Hide all main views
-            document.querySelectorAll('.view').forEach(view => view.classList.add('hidden'));
-            // Hide all detail views
-            document.querySelectorAll('.detail-view').forEach(detailView => detailView.classList.add('hidden'));
 
-            // Show the requested main view
-            document.getElementById(viewName).classList.remove('hidden');
+        // --- State Management ---
+        function loadState() {
+            const savedState = localStorage.getItem('glowUpAppState');
+            if (savedState) {
+                const parsedState = JSON.parse(savedState);
+                
+                // Core App State
+                AppState.completedDays = new Set(parsedState.completedDays || []);
+                AppState.currentStreak = parsedState.currentStreak || 0;
+                AppState.bestStreak = parsedState.bestStreak || 0;
+                AppState.dailyActivityMap = parsedState.dailyActivityMap || {};
+                AppState.completedSkillTasks = parsedState.completedSkillTasks || {};
+                AppState.completedPillarTasks = parsedState.completedPillarTasks || {};
+                AppState.tokens = parsedState.tokens || 0;
+                AppState.dailyFocusTasks = parsedState.dailyFocusTasks || [];
+                AppState.dailyFocusCompletedToday = parsedState.dailyFocusCompletedToday || false;
+                AppState.lastDailyFocusDate = parsedState.lastDailyFocusDate || null;
+                AppState.nextDailyFocusBonus = parsedState.nextDailyFocusBonus || 0;
+                AppState.restDaysAvailable = parsedState.restDaysAvailable || 0;
+                AppState.userGoals = parsedState.userGoals || {};
+                AppState.earnedBadges = new Set(parsedState.earnedBadges || []);
+                AppState.lastSummaryDate = parsedState.lastSummaryDate || null;
+                
+                // Personalization State
+                AppState.userName = parsedState.userName || null;
+                AppState.difficulty = parsedState.difficulty || 'normal';
+                AppState.selectedSkills = new Set(parsedState.selectedSkills || []);
+                AppState.isPersonalized = parsedState.isPersonalized || false;
 
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.classList.remove('active');
-                if (link.dataset.view === viewName) {
-                    link.classList.add('active');
-                }
-            });
-            AppState.currentView = viewName;
-
-            // Specific renders for new sections when they become active
-            if (viewName === 'daily-focus') {
-                renderDailyFocus();
-                startCountdownTimer(); // Start/restart timer when viewing daily focus
-            } else if (viewName === 'shop') {
-                renderShop();
-            } else {
-                if (countdownInterval) clearInterval(countdownInterval); // Pause timer if not on daily focus
+                AppState.startDate = parsedState.startDate ? new Date(parsedState.startDate) : null;
+                AppState.lastVisitDate = parsedState.lastVisitDate || null;
             }
+
+            const todayActual = new Date();
+            todayActual.setHours(0, 0, 0, 0);
+            const todayFormatted = formatDate(todayActual);
+
+            // Initialize start date if not set
+            if (!AppState.startDate) {
+                AppState.startDate = new Date(todayActual);
+                AppState.lastVisitDate = todayFormatted;
+                saveState();
+            }
+
+            const diffTime = Math.abs(todayActual.getTime() - AppState.startDate.getTime());
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            AppState.today = diffDays + 1;
+
+            // Handle new day logic: reset daily flags if it's a new day
+            if (AppState.lastVisitDate !== todayFormatted) {
+                // If the previous day's main mission was NOT completed, break the streak
+                const yesterdayFormatted = formatDate(new Date(todayActual.getTime() - (24 * 60 * 60 * 1000)));
+                const yesterdayActivity = AppState.dailyActivityMap[yesterdayFormatted];
+                if (AppState.today > 1 && yesterdayActivity && !yesterdayActivity.main) {
+                    AppState.currentStreak = 0; // Reset streak if previous day was missed
+                }
+
+                AppState.lastVisitDate = todayFormatted;
+                AppState.dailyFocusCompletedToday = false; // Reset daily focus completed flag
+                AppState.dailyFocusTasks = []; // Clear previous daily focus tasks for regeneration
+                saveState();
+            }
+        }
+
+        function saveState() {
+            const stateToSave = {
+                completedDays: Array.from(AppState.completedDays),
+                currentStreak: AppState.currentStreak,
+                bestStreak: AppState.bestStreak,
+                dailyActivityMap: AppState.dailyActivityMap,
+                completedSkillTasks: AppState.completedSkillTasks,
+                completedPillarTasks: AppState.completedPillarTasks,
+                tokens: AppState.tokens,
+                dailyFocusTasks: AppState.dailyFocusTasks,
+                dailyFocusCompletedToday: AppState.dailyFocusCompletedToday,
+                lastDailyFocusDate: AppState.lastDailyFocusDate,
+                nextDailyFocusBonus: AppState.nextDailyFocusBonus,
+                restDaysAvailable: AppState.restDaysAvailable,
+                userGoals: AppState.userGoals,
+                earnedBadges: Array.from(AppState.earnedBadges),
+                lastSummaryDate: AppState.lastSummaryDate,
+                
+                userName: AppState.userName,
+                difficulty: AppState.difficulty,
+                selectedSkills: Array.from(AppState.selectedSkills),
+                isPersonalized: AppState.isPersonalized,
+
+                startDate: AppState.startDate ? formatDate(AppState.startDate) : null,
+                lastVisitDate: AppState.lastVisitDate
+            };
+            localStorage.setItem('glowUpAppState', JSON.stringify(stateToSave));
+        }
+
+        // --- UI Rendering Functions ---
+
+        function renderPersonalizationMenu() {
+            const skillsGrid = document.getElementById('personalization-skills-grid');
+            skillsGrid.innerHTML = '';
+            skillsData.forEach(skill => {
+                const isSelected = AppState.selectedSkills.has(skill.id);
+                skillsGrid.innerHTML += `
+                    <label class="personalization-skill-item ${isSelected ? 'selected' : ''}">
+                        <input type="checkbox" data-skill-id="${skill.id}" ${isSelected ? 'checked' : ''}>
+                        <span class="text-2xl mr-2">${skill.icon}</span>
+                        <span class="font-medium text-slate-700">${skill.title}</span>
+                    </label>
+                `;
+            });
+
+            document.getElementById('user-name').value = AppState.userName || '';
+            document.getElementById('difficulty-select').value = AppState.difficulty;
+
+            skillsGrid.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const label = e.target.closest('label');
+                    if (e.target.checked) {
+                        label.classList.add('selected');
+                    } else {
+                        label.classList.remove('selected');
+                    }
+                });
+            });
         }
 
         async function renderDashboard() {
             const currentChallengeDay = AppState.today > TOTAL_CHALLENGE_DAYS ? TOTAL_CHALLENGE_DAYS : AppState.today;
-            
             const taskForToday = dailyTasks.find(t => t.day === currentChallengeDay) || dailyTasks[dailyTasks.length - 1];
             
             document.getElementById('today-day').textContent = currentChallengeDay;
             document.getElementById('today-task').textContent = taskForToday.task;
-
-            // Update user name in header
             document.getElementById('display-user-name').textContent = AppState.userName || 'Glow-Upper';
+            document.getElementById('current-streak').textContent = AppState.currentStreak;
+            document.getElementById('best-streak').textContent = AppState.bestStreak;
 
-            // Find the icon for today's pillar
-            const todayPillar = pillarsData.find(p => p.title.includes(taskForToday.pillar)); // Adjusted to match 'pillar' in dailyTasks to 'title' in pillarsData
+
+            const todayPillar = pillarsData.find(p => p.title.includes(taskForToday.pillar));
             document.getElementById('today-pillar-icon').textContent = todayPillar ? todayPillar.icon : '✨';
-
 
             const completeBtn = document.getElementById('complete-today-btn');
             if (AppState.completedDays.has(currentChallengeDay)) {
@@ -1063,31 +1313,26 @@
                 completeBtn.classList.remove('gradient-button', 'hover:bg-amber-600');
                 completeBtn.classList.add('bg-green-500', 'hover:bg-green-500');
             } else if (AppState.restDaysAvailable > 0) {
-                // If rest days are available, show an option to use one
                 completeBtn.textContent = `Mark as Complete (Use Rest Day: ${AppState.restDaysAvailable})`;
                 completeBtn.disabled = false;
                 completeBtn.classList.remove('bg-green-500', 'hover:bg-green-500');
                 completeBtn.classList.add('gradient-button', 'hover:bg-amber-600');
-            }
-            else {
+            } else {
                 completeBtn.textContent = 'Mark as Complete';
                 completeBtn.disabled = false;
                 completeBtn.classList.remove('bg-green-500', 'hover:bg-green-500');
                 completeBtn.classList.add('gradient-button', 'hover:bg-amber-600');
             }
 
-            // Fetch and display daily tip
             await fetchDailyTip(taskForToday.pillar);
-
             renderProgressChart();
         }
 
         async function fetchDailyTip(pillarName, targetElementId = 'daily-tip') {
             const tipElement = document.getElementById(targetElementId);
-            const originalText = tipElement.textContent; // Store original text for message box
-            tipElement.textContent = 'Loading a fresh tip for you...'; // Loading state
+            const originalText = tipElement.textContent;
+            tipElement.textContent = 'Loading a fresh tip for you...';
 
-            // Prioritize selected skills for tips if available
             let promptContext = '';
             if (AppState.selectedSkills.size > 0) {
                 const skillsArray = Array.from(AppState.selectedSkills).map(id => skillsData.find(s => s.id === id)?.title || id);
@@ -1095,7 +1340,7 @@
             }
 
             let chatHistory = [];
-            chatHistory.push({ role: "user", parts: [{ text: `Provide a very short (max 2 sentences) motivational tip or quote for the '${pillarName}' pillar of self-improvement. ${promptContext} Make it inspiring and action-oriented.` }] });
+            chatHistory.push({ role: "user", parts: [{ text: `Provide a very short (max 2 sentences) motivational tip or quote for the '${pillarName}' pillar of self-improvement. ${promptContext} Make it inspiring and action-oriented for an 8th grader.` }] });
             const payload = { contents: chatHistory };
             const apiKey = ""; 
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
@@ -1113,15 +1358,14 @@
                     const text = result.candidates[0].content.parts[0].text;
                     tipElement.textContent = text;
                 } else {
-                    tipElement.textContent = originalText; // Revert to original if failed
+                    tipElement.textContent = originalText;
                     console.error('LLM response structure unexpected:', result);
                 }
             } catch (error) {
-                tipElement.textContent = originalText; // Revert to original if failed
+                tipElement.textContent = originalText;
                 console.error('Error fetching daily tip:', error);
             }
         }
-
 
         function renderCalendar() {
             const grid = document.getElementById('calendar-grid');
@@ -1132,18 +1376,27 @@
                 dayEl.className = 'day-cell h-20 sm:h-24 flex items-center justify-center font-bold text-xl rounded-lg cursor-pointer transition-all duration-300';
                 dayEl.textContent = task.day;
                 
+                const dayKey = formatDate(new Date(AppState.startDate.getTime() + ( (task.day - 1) * 24 * 60 * 60 * 1000) ));
+                const activity = AppState.dailyActivityMap[dayKey] || { main: false, focus: false };
+
                 let baseClasses = 'bg-white shadow-md hover:shadow-xl hover:-translate-y-1 border border-slate-100';
-                
-                if (AppState.completedDays.has(task.day)) {
-                    baseClasses = 'bg-green-100 text-green-700 shadow-sm border border-green-200';
+                if (AppState.completedDays.has(task.day)) { // Main mission completed
+                    if (activity.focus) {
+                        baseClasses = 'bg-green-200 text-green-800 shadow-sm border border-green-400 completed-all'; // Main + Focus
+                    } else {
+                        baseClasses = 'bg-green-100 text-green-700 shadow-sm border border-green-200 completed-main'; // Main only
+                    }
+                } else if (activity.focus) { // Only daily focus completed
+                    baseClasses = 'bg-green-50 text-green-700 shadow-sm border border-green-100 completed-focus';
+                } else if (task.day < AppState.today) { // Missed past day
+                    baseClasses = 'bg-red-100 text-red-700 shadow-sm border border-red-300 missed';
                 }
                 
                 if (task.day === AppState.today) {
-                    baseClasses += ' ring-2 ring-amber-500 ring-offset-2'; /* Added ring-offset for better highlight */
+                    baseClasses += ' ring-2 ring-amber-500 ring-offset-2';
                 }
                 
                 dayEl.classList.add(...baseClasses.split(' '));
-                
                 grid.appendChild(dayEl);
             });
         }
@@ -1174,12 +1427,10 @@
             const pillar = pillarsData.find(p => p.id === pillarId);
             if (!pillar) return;
 
-            // Hide main pillars view and show detail view
             document.getElementById('pillars').classList.add('hidden');
             const detailView = document.getElementById('pillar-detail-view');
             detailView.classList.remove('hidden');
 
-            // Populate detail view
             document.getElementById('pillar-detail-icon').textContent = pillar.icon;
             document.getElementById('pillar-detail-title').textContent = pillar.title;
             document.getElementById('pillar-detail-content').textContent = pillar.content;
@@ -1201,12 +1452,10 @@
                 `;
             });
 
-            // Update progress
             const progress = pillar.tasks.length > 0 ? Math.round((completedTasks.length / pillar.tasks.length) * 100) : 0;
             document.getElementById('pillar-progress-text').textContent = `${progress}%`;
             document.getElementById('pillar-progress-bar').style.width = `${progress}%`;
 
-            // Add event listeners for new buttons (delegated for efficiency)
             tasksContainer.querySelectorAll('.pillar-task-btn').forEach(button => {
                 button.addEventListener('click', (e) => {
                     const clickedPillarId = e.target.dataset.pillarId;
@@ -1219,7 +1468,7 @@
                     if (!AppState.completedPillarTasks[clickedPillarId].includes(taskIndex)) {
                         AppState.completedPillarTasks[clickedPillarId].push(taskIndex);
                         saveState();
-                        // Re-render only the current pillar detail view to update progress and button state
+                        checkAchievements(); // Check for new achievements
                         showPillarDetail(clickedPillarId); 
                         showMessage(`Task completed for ${clickedPillarId}!`);
                     } else {
@@ -1227,6 +1476,9 @@
                     }
                 });
             });
+
+            // Render Goals for this Pillar
+            renderGoalsForEntity(pillarId, 'pillar-goals-list', 'add-pillar-goal-input', 'add-pillar-goal-btn');
         }
 
         function renderSkills() {
@@ -1256,12 +1508,10 @@
             const skill = skillsData.find(s => s.id === skillId);
             if (!skill) return;
 
-            // Hide main skills view and show detail view
             document.getElementById('skills').classList.add('hidden');
             const detailView = document.getElementById('skill-detail-view');
             detailView.classList.remove('hidden');
 
-            // Populate detail view
             document.getElementById('skill-detail-icon').textContent = skill.icon;
             document.getElementById('skill-detail-title').textContent = skill.title;
             document.getElementById('skill-detail-content').textContent = skill.content;
@@ -1283,12 +1533,10 @@
                 `;
             });
 
-            // Update progress
             const progress = skill.tasks.length > 0 ? Math.round((completedTasks.length / skill.tasks.length) * 100) : 0;
             document.getElementById('skill-progress-text').textContent = `${progress}%`;
             document.getElementById('skill-progress-bar').style.width = `${progress}%`;
 
-            // Add event listeners for new buttons (delegated for efficiency)
             tasksContainer.querySelectorAll('.skill-task-btn').forEach(button => {
                 button.addEventListener('click', (e) => {
                     const clickedSkillId = e.target.dataset.skillId;
@@ -1301,7 +1549,7 @@
                     if (!AppState.completedSkillTasks[clickedSkillId].includes(taskIndex)) {
                         AppState.completedSkillTasks[clickedSkillId].push(taskIndex);
                         saveState();
-                        // Re-render only the current skill detail view to update progress and button state
+                        checkAchievements(); // Check for new achievements
                         showSkillDetail(clickedSkillId);
                         showMessage(`Task completed for ${clickedSkillId}!`);
                     } else {
@@ -1309,7 +1557,64 @@
                     }
                 });
             });
+
+            // Render Goals for this Skill
+            renderGoalsForEntity(skillId, 'skill-goals-list', 'add-skill-goal-input', 'add-skill-goal-btn');
         }
+
+        function renderGoalsForEntity(entityId, listId, inputId, buttonId) {
+            const goalsList = document.getElementById(listId);
+            goalsList.innerHTML = '';
+            AppState.userGoals[entityId] = AppState.userGoals[entityId] || [];
+
+            if (AppState.userGoals[entityId].length === 0) {
+                goalsList.innerHTML = '<p class="text-slate-500 italic text-sm">No goals set yet for this area.</p>';
+            } else {
+                AppState.userGoals[entityId].forEach(goal => {
+                    goalsList.innerHTML += `
+                        <div class="goal-item ${goal.completed ? 'completed' : ''}">
+                            <label class="flex items-center flex-grow cursor-pointer">
+                                <input type="checkbox" class="goal-checkbox mr-3" data-goal-id="${goal.id}" ${goal.completed ? 'checked disabled' : ''}>
+                                <span class="goal-text">${goal.text}</span>
+                            </label>
+                        </div>
+                    `;
+                });
+            }
+
+            // Event listener for adding a goal
+            document.getElementById(buttonId).onclick = () => {
+                const input = document.getElementById(inputId);
+                const goalText = input.value.trim();
+                if (goalText) {
+                    const newGoal = { id: generateUUID(), text: goalText, completed: false };
+                    AppState.userGoals[entityId].push(newGoal);
+                    input.value = '';
+                    saveState();
+                    renderGoalsForEntity(entityId, listId, inputId, buttonId); // Re-render goals
+                    showMessage('Goal added!');
+                } else {
+                    showMessage('Please enter a goal!');
+                }
+            };
+
+            // Event listener for marking goal complete
+            goalsList.querySelectorAll('.goal-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const goalId = e.target.dataset.goalId;
+                    const goal = AppState.userGoals[entityId].find(g => g.id === goalId);
+                    if (goal && e.target.checked) {
+                        goal.completed = true;
+                        e.target.disabled = true; // Disable once checked
+                        saveState();
+                        checkAchievements(); // Check for new achievements
+                        renderGoalsForEntity(entityId, listId, inputId, buttonId); // Re-render to update class
+                        showMessage('Goal completed! Great job!');
+                    }
+                });
+            });
+        }
+
 
         function renderDailyFocus() {
             const todayFormatted = formatDate(new Date());
@@ -1318,73 +1623,79 @@
             const tokensDisplay = document.getElementById('tokens-display');
             tokensDisplay.textContent = AppState.tokens;
 
-            // Check if it's a new day or if tasks haven't been generated yet
             if (AppState.lastDailyFocusDate !== todayFormatted || AppState.dailyFocusTasks.length === 0) {
                 AppState.dailyFocusCompletedToday = false;
                 AppState.lastDailyFocusDate = todayFormatted;
-                AppState.dailyFocusTasks = []; // Clear previous tasks
+                AppState.dailyFocusTasks = [];
 
-                let availableSkills = Array.from(AppState.selectedSkills);
-                if (availableSkills.length === 0) {
-                    // If no skills are selected in personalization, pick from all skills
-                    availableSkills = skillsData.map(s => s.id);
+                let availableSkillsForFocus = [];
+                if (AppState.selectedSkills.size > 0) {
+                    availableSkillsForFocus = Array.from(AppState.selectedSkills);
+                } else {
+                    availableSkillsForFocus = skillsData.map(s => s.id); // Fallback to all skills
                 }
 
-                // Shuffle available skills and pick up to MAX_DAILY_SKILL_TASKS unique tasks
-                const shuffledSkills = availableSkills.sort(() => 0.5 - Math.random());
-                const skillsForToday = shuffledSkills.slice(0, MAX_DAILY_SKILL_TASKS);
-
-                skillsForToday.forEach(skillId => {
+                // Shuffle skills and tasks to pick unique ones
+                const uniqueTasks = [];
+                const allSkillTasks = []; // Flatten all skills' tasks
+                availableSkillsForFocus.forEach(skillId => {
                     const skill = skillsData.find(s => s.id === skillId);
-                    if (skill && skill.tasks.length > 0) {
-                        const randomTaskIndex = Math.floor(Math.random() * skill.tasks.length);
-                        AppState.dailyFocusTasks.push({
-                            skillId: skill.id,
-                            taskIndex: randomTaskIndex,
-                            taskText: skill.tasks[randomTaskIndex],
-                            completed: false
+                    if (skill) {
+                        skill.tasks.forEach((taskText, taskIndex) => {
+                            allSkillTasks.push({ skillId, taskIndex, taskText });
                         });
                     }
                 });
-                saveState(); // Save newly generated tasks
+
+                // Randomly pick unique tasks up to MAX_DAILY_SKILL_TASKS
+                const shuffledAllTasks = allSkillTasks.sort(() => 0.5 - Math.random());
+                for (let i = 0; i < Math.min(MAX_DAILY_SKILL_TASKS, shuffledAllTasks.length); i++) {
+                    const task = shuffledAllTasks[i];
+                    AppState.dailyFocusTasks.push({
+                        skillId: task.skillId,
+                        taskIndex: task.taskIndex,
+                        taskText: task.taskText,
+                        completed: false
+                    });
+                }
+                saveState();
             }
 
-            // Render the tasks
-            dailyTasksContainer.innerHTML = ''; // Clear loading message
+            dailyTasksContainer.innerHTML = '';
             if (AppState.dailyFocusTasks.length === 0) {
-                dailyTasksContainer.innerHTML = '<p class="text-center text-slate-500 italic">No daily tasks could be generated today. Check your selected skills!</p>';
+                dailyTasksContainer.innerHTML = '<p class="text-center text-slate-500 italic">No daily tasks could be generated today. Try selecting more skills in the personalization menu!</p>';
             } else {
                 AppState.dailyFocusTasks.forEach((task, index) => {
                     const isCompleted = AppState.dailyFocusTasks[index].completed;
+                    const skill = skillsData.find(s => s.id === task.skillId);
                     dailyTasksContainer.innerHTML += `
                         <div class="daily-skill-task-item ${isCompleted ? 'completed' : ''}">
                             <label class="flex items-center flex-grow cursor-pointer">
                                 <input type="checkbox" class="daily-skill-task-checkbox mr-3" data-task-list-index="${index}" ${isCompleted ? 'checked disabled' : ''}>
                                 <span class="text-slate-700 ${isCompleted ? 'text-green-800' : ''}">
-                                    ${skillsData.find(s => s.id === task.skillId)?.icon || ' '} ${task.taskText}
+                                    ${skill ? skill.icon : ' '} ${task.taskText}
                                 </span>
                             </label>
                         </div>
                     `;
                 });
 
-                // Add event listeners for checkboxes
                 dailyTasksContainer.querySelectorAll('.daily-skill-task-checkbox').forEach(checkbox => {
                     checkbox.addEventListener('change', (e) => {
                         const taskListIndex = parseInt(e.target.dataset.taskListIndex);
                         AppState.dailyFocusTasks[taskListIndex].completed = e.target.checked;
                         saveState();
-                        renderDailyFocus(); // Re-render to update UI and button state
+                        renderDailyFocus();
+                        checkAchievements(); // Check for new achievements
                     });
                 });
             }
             
-            // Update the "Claim Tokens" button state
             const allTasksCompleted = AppState.dailyFocusTasks.every(task => task.completed);
             if (allTasksCompleted && !AppState.dailyFocusCompletedToday) {
                 claimTokensBtn.disabled = false;
-                claimTokensBtn.textContent = `Claim Your ${TOKEN_FOR_DAILY_QUEST} Tokens! ✨`;
-                claimTokensBtn.classList.remove('bg-green-500', 'hover:bg-green-500');
+                claimTokensBtn.textContent = `Claim Your ${TOKEN_FOR_DAILY_FOCUS_COMPLETION + AppState.nextDailyFocusBonus} Tokens! ✨`;
+                claimTokensBtn.classList.remove('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
                 claimTokensBtn.classList.add('gradient-button');
             } else if (AppState.dailyFocusCompletedToday) {
                 claimTokensBtn.disabled = true;
@@ -1393,7 +1704,7 @@
                 claimTokensBtn.classList.add('bg-green-500', 'hover:bg-green-500');
             } else {
                 claimTokensBtn.disabled = true;
-                claimTokensBtn.textContent = `Complete all tasks to claim ${TOKEN_FOR_DAILY_QUEST} Tokens!`;
+                claimTokensBtn.textContent = `Complete all tasks to claim ${TOKEN_FOR_DAILY_FOCUS_COMPLETION + AppState.nextDailyFocusBonus} Tokens!`;
                 claimTokensBtn.classList.remove('gradient-button', 'bg-green-500', 'hover:bg-green-500');
                 claimTokensBtn.classList.add('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
             }
@@ -1401,11 +1712,19 @@
 
         function claimDailyFocusTokens() {
             if (!AppState.dailyFocusCompletedToday && AppState.dailyFocusTasks.every(task => task.completed)) {
-                AppState.tokens += TOKEN_FOR_DAILY_QUEST;
+                AppState.tokens += (TOKEN_FOR_DAILY_FOCUS_COMPLETION + AppState.nextDailyFocusBonus);
                 AppState.dailyFocusCompletedToday = true;
+                
+                const todayFormatted = formatDate(new Date());
+                AppState.dailyActivityMap[todayFormatted] = AppState.dailyActivityMap[todayFormatted] || { main: false, focus: false };
+                AppState.dailyActivityMap[todayFormatted].focus = true; // Mark daily focus as completed for heatmap
+
+                AppState.nextDailyFocusBonus = 0; // Reset bonus after claiming
                 saveState();
                 renderDailyFocus();
-                showMessage(`Daily Focus complete! You earned ${TOKEN_FOR_DAILY_QUEST} Glow Tokens! ✨`);
+                renderCalendar(); // Update calendar heatmap
+                checkAchievements(); // Check for new achievements
+                showMessage(`Daily Focus complete! You earned ${TOKEN_FOR_DAILY_FOCUS_COMPLETION + AppState.nextDailyFocusBonus} Glow Tokens! ✨`);
             } else if (AppState.dailyFocusCompletedToday) {
                 showMessage("You've already claimed tokens for today's Daily Focus!");
             } else {
@@ -1458,9 +1777,8 @@
                         AppState.restDaysAvailable++;
                         showMessage(`Successfully purchased a Rest Day! You now have ${AppState.restDaysAvailable} rest days.`);
                         break;
-                    case 'tip-boost':
+                    case 'instant-tip':
                         showMessage('Here is your extra daily tip!');
-                        // Trigger a new daily tip fetch, possibly from a random selected skill if available
                         let randomPillarForTip = pillarsData[Math.floor(Math.random() * pillarsData.length)].title;
                         if (AppState.selectedSkills.size > 0) {
                             const selectedSkillIds = Array.from(AppState.selectedSkills);
@@ -1469,15 +1787,30 @@
                         }
                         fetchDailyTip(randomPillarForTip, 'message-box'); 
                         break;
-                    case 'token-bonus': // New shop item
-                        AppState.tokens += 5; // Give 5 extra tokens
+                    case 'token-bonus':
+                        AppState.tokens += 5;
                         showMessage('You received 5 bonus Glow Tokens! ✨');
+                        break;
+                    case 'skill-xp-boost':
+                        AppState.nextDailyFocusBonus += TOKEN_FOR_DAILY_FOCUS_COMPLETION; // Doubles next bonus
+                        showMessage('Next Daily Focus completion will give double tokens! ⚡');
+                        break;
+                    case 'mystery-box':
+                        const mysteryReward = Math.random();
+                        if (mysteryReward < 0.5) {
+                            AppState.tokens += 15;
+                            showMessage('Mystery Box: You won 15 extra Glow Tokens! 🎁');
+                        } else {
+                            AppState.restDaysAvailable += 1;
+                            showMessage('Mystery Box: You won a Rest Day! 🎁');
+                        }
                         break;
                     default:
                         showMessage('Unknown item purchased.');
                 }
-                renderShop(); // Re-render shop to update token count and button states
-                renderDashboard(); // Re-render dashboard if rest day count changes
+                renderShop();
+                renderDashboard(); // Update dashboard for rest day count
+                checkAchievements(); // Check for new achievements
             } else {
                 showMessage(`Not enough tokens! You need ${item.cost} tokens for this.`);
             }
@@ -1587,100 +1920,111 @@
             }, 3000);
         }
 
-        function loadState() {
-            const savedState = localStorage.getItem('glowUpAppState');
-            if (savedState) {
-                const parsedState = JSON.parse(savedState);
-                AppState.completedDays = new Set(parsedState.completedDays || []);
-                AppState.completedSkillTasks = parsedState.completedSkillTasks || {};
-                AppState.completedPillarTasks = parsedState.completedPillarTasks || {};
-                AppState.tokens = parsedState.tokens || 0;
-                AppState.dailyFocusTasks = parsedState.dailyFocusTasks || []; // Load daily focus tasks
-                AppState.dailyFocusCompletedToday = parsedState.dailyFocusCompletedToday || false; // Load daily focus status
-                AppState.lastDailyFocusDate = parsedState.lastDailyFocusDate || null; // Load last focus date
-                AppState.restDaysAvailable = parsedState.restDaysAvailable || 0;
-                
-                // Load personalization data
-                AppState.userName = parsedState.userName || null;
-                AppState.difficulty = parsedState.difficulty || 'normal';
-                AppState.selectedSkills = new Set(parsedState.selectedSkills || []);
-                AppState.isPersonalized = parsedState.isPersonalized || false;
-
-                AppState.startDate = parsedState.startDate ? new Date(parsedState.startDate) : null;
-                AppState.lastVisitDate = parsedState.lastVisitDate || null;
-            }
-
-            const todayActual = new Date();
-            todayActual.setHours(0, 0, 0, 0);
-            const todayFormatted = formatDate(todayActual);
-
-            if (!AppState.startDate) {
-                AppState.startDate = new Date(todayActual);
-                AppState.lastVisitDate = todayFormatted;
+        // --- Achievements / Badges ---
+        function checkAchievements() {
+            // Consistency Streak (7-Day)
+            if (AppState.currentStreak >= 7 && !AppState.earnedBadges.has('consistency-streak-7')) {
+                AppState.earnedBadges.add('consistency-streak-7');
+                showMessage('Achievement Unlocked: 7-Day Streak! 🔥');
                 saveState();
             }
-
-            const diffTime = Math.abs(todayActual.getTime() - AppState.startDate.getTime());
-            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-            AppState.today = diffDays + 1;
-
-            if (AppState.lastVisitDate !== todayFormatted) {
-                AppState.lastVisitDate = todayFormatted;
+            // Consistency Streak (30-Day)
+            if (AppState.currentStreak >= 30 && !AppState.earnedBadges.has('consistency-streak-30')) {
+                AppState.earnedBadges.add('consistency-streak-30');
+                showMessage('Achievement Unlocked: 30-Day Streak! 🌟');
                 saveState();
             }
+            // Halfway Hero
+            if (AppState.completedDays.size >= TOTAL_CHALLENGE_DAYS / 2 && !AppState.earnedBadges.has('halfway-hero')) {
+                AppState.earnedBadges.add('halfway-hero');
+                showMessage('Achievement Unlocked: Halfway Hero! 🏅');
+                saveState();
+            }
+            // Challenge Master
+            if (AppState.completedDays.size >= TOTAL_CHALLENGE_DAYS && !AppState.earnedBadges.has('challenge-master')) {
+                AppState.earnedBadges.add('challenge-master');
+                showMessage('Achievement Unlocked: Challenge Master! 👑');
+                saveState();
+            }
+            // Token Tycoon
+            if (AppState.tokens >= 50 && !AppState.earnedBadges.has('token-tycoon')) {
+                AppState.earnedBadges.add('token-tycoon');
+                showMessage('Achievement Unlocked: Token Tycoon! 💰');
+                saveState();
+            }
+            // Skill Explorer (Check across all skill tasks)
+            let totalSkillTasksCompleted = 0;
+            for (const skillId in AppState.completedSkillTasks) {
+                totalSkillTasksCompleted += AppState.completedSkillTasks[skillId].length;
+            }
+            if (totalSkillTasksCompleted >= 5 && !AppState.earnedBadges.has('skill-explorer')) {
+                AppState.earnedBadges.add('skill-explorer');
+                showMessage('Achievement Unlocked: Skill Explorer! 🗺️');
+                saveState();
+            }
+            // Pillar Powerhouse (Check across all pillar tasks)
+            let totalPillarTasksCompleted = 0;
+            for (const pillarId in AppState.completedPillarTasks) {
+                totalPillarTasksCompleted += AppState.completedPillarTasks[pillarId].length;
+            }
+            if (totalPillarTasksCompleted >= 5 && !AppState.earnedBadges.has('pillar-powerhouse')) {
+                AppState.earnedBadges.add('pillar-powerhouse');
+                showMessage('Achievement Unlocked: Pillar Powerhouse! 🏛️');
+                saveState();
+            }
+            // Goal Getter (First completed goal)
+            let anyGoalCompleted = false;
+            for (const entityId in AppState.userGoals) {
+                if (AppState.userGoals[entityId].some(goal => goal.completed)) {
+                    anyGoalCompleted = true;
+                    break;
+                }
+            }
+            if (anyGoalCompleted && !AppState.earnedBadges.has('goal-getter')) {
+                AppState.earnedBadges.add('goal-getter');
+                showMessage('Achievement Unlocked: Goal Getter! 🎯');
+                saveState();
+            }
+            // Shopaholic (Purchased 3 items)
+            let totalItemsPurchased = 0; // This would require tracking total purchases, for simplicity, we'll check against token spend or shop item IDs directly
+            // For now, let's just make it a simple check for 3 distinct items purchased in shop
+            // AppState.shopItemsPurchased will need to be added if tracking distinct item purchases
+            // For now, I'll remove this check as it needs another state property to track distinct purchases.
+            /*
+            const purchasedItemsCount = Array.from(AppState.shopItemsPurchased || []).length; // Needs a new state property
+            if (purchasedItemsCount >= 3 && !AppState.earnedBadges.has('shopaholic')) {
+                AppState.earnedBadges.add('shopaholic');
+                showMessage('Achievement Unlocked: Shopaholic! 🛍️');
+                saveState();
+            }
+            */
+            renderBadges(); // Re-render badges after checking
         }
 
-        function saveState() {
-            const stateToSave = {
-                completedDays: Array.from(AppState.completedDays),
-                completedSkillTasks: AppState.completedSkillTasks,
-                completedPillarTasks: AppState.completedPillarTasks,
-                tokens: AppState.tokens,
-                dailyFocusTasks: AppState.dailyFocusTasks, // Save daily focus tasks
-                dailyFocusCompletedToday: AppState.dailyFocusCompletedToday,
-                lastDailyFocusDate: AppState.lastDailyFocusDate,
-                restDaysAvailable: AppState.restDaysAvailable,
-                // Save personalization data
-                userName: AppState.userName,
-                difficulty: AppState.difficulty,
-                selectedSkills: Array.from(AppState.selectedSkills), // Convert Set to Array for saving
-                isPersonalized: AppState.isPersonalized,
+        function renderBadges() {
+            const badgesGrid = document.getElementById('badges-grid');
+            badgesGrid.innerHTML = '';
+            const noBadgesMsg = document.getElementById('no-badges-msg');
 
-                startDate: AppState.startDate ? formatDate(AppState.startDate) : null,
-                lastVisitDate: AppState.lastVisitDate
-            };
-            localStorage.setItem('glowUpAppState', JSON.stringify(stateToSave));
-        }
+            if (AppState.earnedBadges.size === 0) {
+                noBadgesMsg.classList.remove('hidden');
+                return;
+            } else {
+                noBadgesMsg.classList.add('hidden');
+            }
 
-        function renderPersonalizationMenu() {
-            const skillsGrid = document.getElementById('personalization-skills-grid');
-            skillsGrid.innerHTML = '';
-            skillsData.forEach(skill => {
-                const isSelected = AppState.selectedSkills.has(skill.id);
-                skillsGrid.innerHTML += `
-                    <label class="personalization-skill-item ${isSelected ? 'selected' : ''}">
-                        <input type="checkbox" data-skill-id="${skill.id}" ${isSelected ? 'checked' : ''}>
-                        <span class="text-2xl mr-2">${skill.icon}</span>
-                        <span class="font-medium text-slate-700">${skill.title}</span>
-                    </label>
-                `;
-            });
-
-            // Set initial values from AppState if already present (e.g., after loading state but before personalization is complete)
-            document.getElementById('user-name').value = AppState.userName || '';
-            document.getElementById('difficulty-select').value = AppState.difficulty;
-
-            // Add event listeners for checkboxes to toggle 'selected' class
-            skillsGrid.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                checkbox.addEventListener('change', (e) => {
-                    const label = e.target.closest('label');
-                    if (e.target.checked) {
-                        label.classList.add('selected');
-                    } else {
-                        label.classList.remove('selected');
-                    }
-                });
+            badgesData.forEach(badge => {
+                if (AppState.earnedBadges.has(badge.id)) {
+                    badgesGrid.innerHTML += `
+                        <div class="bg-white p-4 rounded-xl shadow-md border border-slate-100 flex items-center space-x-4">
+                            <span class="text-4xl">${badge.icon}</span>
+                            <div>
+                                <h4 class="font-bold text-lg text-slate-800">${badge.name}</h4>
+                                <p class="text-slate-600 text-sm">${badge.description}</p>
+                            </div>
+                        </div>
+                    `;
+                }
             });
         }
 
@@ -1688,27 +2032,26 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadState();
             
-            // Check if personalization is complete
             if (!AppState.isPersonalized) {
                 document.getElementById('personalization-menu').classList.remove('hidden');
                 document.getElementById('app-main-content').classList.add('hidden');
-                renderPersonalizationMenu(); // Render skills checkboxes
+                renderPersonalizationMenu();
             } else {
                 document.getElementById('personalization-menu').classList.add('hidden');
                 document.getElementById('app-main-content').classList.remove('hidden');
-                // Initial renders for the main app
                 renderDashboard();
                 renderCalendar();
                 renderPillars();
                 renderSkills();
                 renderSchedule('weekday');
                 renderShop();
-                if (AppState.currentView === 'daily-focus') { // Only start timer if daily-focus is the current view
+                renderBadges();
+                // Check if current view is daily-focus, then start timer
+                if (AppState.currentView === 'daily-focus') {
                     startCountdownTimer();
                 }
             }
 
-            // Event listener for "Start Your Glow-Up!" button
             document.getElementById('start-glow-up-btn').addEventListener('click', () => {
                 const userNameInput = document.getElementById('user-name').value.trim();
                 if (!userNameInput) {
@@ -1718,11 +2061,15 @@
                 AppState.userName = userNameInput;
                 AppState.difficulty = document.getElementById('difficulty-select').value;
                 
-                // Collect selected skills
                 AppState.selectedSkills.clear();
                 document.querySelectorAll('#personalization-skills-grid input[type="checkbox"]:checked').forEach(checkbox => {
                     AppState.selectedSkills.add(checkbox.dataset.skillId);
                 });
+                
+                // Initialize daily focus tasks for the first time after personalization
+                AppState.dailyFocusTasks = []; 
+                AppState.lastDailyFocusDate = formatDate(new Date()); // Set current date as last focus date
+                AppState.dailyFocusCompletedToday = false;
 
                 AppState.isPersonalized = true;
                 saveState();
@@ -1730,16 +2077,15 @@
                 document.getElementById('personalization-menu').classList.add('hidden');
                 document.getElementById('app-main-content').classList.remove('hidden');
                 
-                // Re-render all main sections with personalized data
                 renderDashboard();
                 renderCalendar();
                 renderPillars();
                 renderSkills();
                 renderSchedule('weekday');
                 renderShop();
-                // When personalization is complete, default to dashboard and start timer
-                updateView('dashboard'); 
-                startCountdownTimer();
+                renderBadges();
+                updateView('dashboard'); // Always start on dashboard after personalization
+                startCountdownTimer(); // Start timer as well
                 showMessage(`Welcome, ${AppState.userName}! Let's glow up! ✨`);
             });
 
@@ -1766,15 +2112,23 @@
                 }
             });
 
-            // Daily Focus token claim handler
-            document.getElementById('claim-tokens-btn').addEventListener('click', claimDailyFocusTokens);
+            document.getElementById('back-to-pillars-btn').addEventListener('click', () => {
+                document.getElementById('pillar-detail-view').classList.add('hidden');
+                document.getElementById('pillars').classList.remove('hidden');
+            });
+            document.getElementById('back-to-skills-btn').addEventListener('click', () => {
+                document.getElementById('skill-detail-view').classList.add('hidden');
+                document.getElementById('skills').classList.remove('hidden');
+            });
 
+            document.getElementById('claim-tokens-btn').addEventListener('click', claimDailyFocusTokens);
 
             document.getElementById('weekday-btn').addEventListener('click', () => renderSchedule('weekday'));
             document.getElementById('weekend-btn').addEventListener('click', () => renderSchedule('weekend'));
 
             document.getElementById('complete-today-btn').addEventListener('click', () => {
                 const currentChallengeDay = AppState.today;
+                const todayFormatted = formatDate(new Date());
 
                 if (currentChallengeDay > TOTAL_CHALLENGE_DAYS) {
                     showMessage(`All ${TOTAL_CHALLENGE_DAYS} days are complete! You are amazing!`);
@@ -1786,20 +2140,30 @@
                     return;
                 }
 
+                // Update daily activity map for today
+                AppState.dailyActivityMap[todayFormatted] = AppState.dailyActivityMap[todayFormatted] || { main: false, focus: false };
+                AppState.dailyActivityMap[todayFormatted].main = true; // Mark main mission as completed for heatmap
+
+                // Streak logic
+                AppState.currentStreak++;
+                if (AppState.currentStreak > AppState.bestStreak) {
+                    AppState.bestStreak = AppState.currentStreak;
+                }
+
                 if (AppState.restDaysAvailable > 0) {
-                    // Use a rest day to complete the mission
                     AppState.completedDays.add(currentChallengeDay);
                     AppState.restDaysAvailable--;
                     saveState();
-                    renderDashboard(); // Re-render to update completed status and rest day count
+                    renderDashboard();
                     renderCalendar();
+                    checkAchievements(); // Check achievements after completing a day
                     showMessage('Used a Rest Day! Mission completed without effort. 🎉');
                 } else {
-                    // Mark as complete normally
                     AppState.completedDays.add(currentChallengeDay);
                     saveState();
-                    renderDashboard(); // Re-render to update completed status
+                    renderDashboard();
                     renderCalendar();
+                    checkAchievements(); // Check achievements after completing a day
                     showMessage('Great job! Mission complete!');
                 }
             });
