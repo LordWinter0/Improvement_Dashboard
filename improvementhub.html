@@ -12,15 +12,28 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8f7f4;
+            background-color: #f0f4f8; /* Slightly adjusted background for a softer feel */
         }
         .nav-link {
             transition: all 0.3s ease;
             cursor: pointer;
+            position: relative;
+            padding-bottom: 0.75rem; /* Adjust for border */
         }
         .nav-link.active {
             color: #f59e0b;
-            border-bottom: 2px solid #f59e0b;
+            font-weight: 700; /* Bolder for active */
+        }
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 3px;
+            background-color: #f59e0b;
+            border-radius: 2px;
         }
         .chart-container {
             position: relative;
@@ -41,12 +54,16 @@
         }
         .pillar-card, .skill-card {
             position: relative;
+            overflow: hidden; /* Ensures content doesn't spill on toggle */
         }
         /* Adjusted positioning for the toggle icon for better grouping */
         .expand-toggle-icon {
             font-size: 1.5rem;
             color: #f59e0b;
             transition: transform 0.3s ease;
+            position: absolute; /* Position relative to the card */
+            top: 1.5rem; /* Consistent with padding */
+            right: 1.5rem; /* Consistent with padding */
         }
         .pillar-card.expanded .expand-toggle-icon,
         .skill-card.expanded .expand-toggle-icon {
@@ -62,15 +79,17 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background-color: #fefce8; /* Amber-50 */
+            background-color: #fffbeb; /* Amber-50, slightly lighter */
             padding: 0.75rem 1rem;
             border-radius: 0.5rem;
             margin-bottom: 0.5rem;
+            border: 1px solid #fcd34d; /* Amber-300 border */
         }
         .skill-task.completed {
             background-color: #d1fae5; /* Green-100 */
             color: #065f46; /* Green-800 */
             text-decoration: line-through;
+            border-color: #34d399; /* Green-400 border */
         }
         .skill-task-btn {
             padding: 0.25rem 0.75rem;
@@ -78,6 +97,7 @@
             font-weight: 600;
             border-radius: 0.375rem;
             transition: all 0.2s ease;
+            white-space: nowrap; /* Prevent button text from wrapping */
         }
         .skill-task-btn:not(:disabled) {
             background-color: #fcd34d; /* Amber-300 */
@@ -85,23 +105,37 @@
         }
         .skill-task-btn:not(:disabled):hover {
             background-color: #fbbf24; /* Amber-400 */
+            box-shadow: 0 2px 5px rgba(252, 211, 77, 0.5); /* Subtle shadow on hover */
         }
         .skill-task-btn:disabled {
             background-color: #a7f3d0; /* Green-200 */
             color: #065f46; /* Green-800 */
             cursor: not-allowed;
         }
+
+        /* Ensure card height adjusts naturally when content expands */
+        .pillar-card.expanded, .skill-card.expanded {
+            height: auto;
+        }
+
+        /* Specific styles for card headers to ensure icon is within the clickable area */
+        .pillar-header, .skill-header {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding-right: 3rem; /* Make space for the absolute icon */
+        }
     </style>
 </head>
 <body class="text-slate-700">
 
     <div id="app" class="max-w-7xl mx-auto p-4 md:p-8">
-        <header class="text-center mb-8">
+        <header class="text-center mb-10">
             <h1 class="text-4xl md:text-5xl font-bold text-slate-800">Your 90-Day Glow-Up</h1>
             <p class="mt-2 text-lg text-slate-500">A complete guide to a more confident you.</p>
         </header>
 
-        <nav class="flex justify-center border-b border-slate-200 mb-8 space-x-4 sm:space-x-8">
+        <nav class="flex justify-center border-b border-slate-200 mb-10 space-x-4 sm:space-x-8">
             <a data-view="dashboard" class="nav-link active py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">Dashboard</a>
             <a data-view="plan" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">90-Day Plan</a>
             <a data-view="pillars" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">The Pillars</a>
@@ -112,17 +146,17 @@
         <main>
             <section id="dashboard" class="view">
                 <div class="text-center mb-12">
-                    <h2 class="text-3xl font-bold text-slate-800 mb-2">Welcome! Here's your focus for today.</h2>
+                    <h2 class="text-3xl font-bold text-slate-700 mb-2">✨ Today's Focus ✨</h2>
                     <p class="text-slate-500">Consistency is your superpower. Let's make today count!</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="md:col-span-2 bg-white p-6 rounded-2xl shadow-lg">
-                        <h3 class="font-bold text-xl text-slate-800 mb-4">✨ Today's Mission (Day <span id="today-day"></span>)</h3>
+                    <div class="md:col-span-2 bg-white p-6 rounded-2xl shadow-xl border border-slate-100">
+                        <h3 class="font-bold text-xl text-slate-800 mb-4">Day <span id="today-day"></span> Mission</h3>
                         <p id="today-task" class="text-lg text-slate-600 leading-relaxed"></p>
-                        <button id="complete-today-btn" class="mt-6 bg-amber-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-amber-600 transition-colors">Mark as Complete</button>
+                        <button id="complete-today-btn" class="mt-6 bg-amber-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-amber-600 transition-colors shadow-md hover:shadow-lg">Mark as Complete</button>
                     </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-lg">
+                    <div class="bg-white p-6 rounded-2xl shadow-xl border border-slate-100">
                         <h3 class="font-bold text-xl text-slate-800 mb-4">📊 Progress Tracker</h3>
                         <div class="chart-container">
                             <canvas id="progressChart"></canvas>
@@ -134,7 +168,7 @@
 
             <section id="plan" class="view hidden">
                 <div class="text-center mb-8">
-                    <h2 class="text-3xl font-bold text-slate-800 mb-2">Your 90-Day Calendar</h2>
+                    <h2 class="text-3xl font-bold text-slate-700 mb-2">Your 90-Day Calendar</h2>
                     <p class="text-slate-500">Click on any day to see your mission. Today is highlighted for you!</p>
                 </div>
                 <div id="calendar-grid" class="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-4">
@@ -143,7 +177,7 @@
 
             <section id="pillars" class="view hidden">
                 <div class="text-center mb-8">
-                    <h2 class="text-3xl font-bold text-slate-800 mb-2">The Six Pillars of Your Glow-Up</h2>
+                    <h2 class="text-3xl font-bold text-slate-700 mb-2">The Six Pillars of Your Glow-Up</h2>
                     <p class="text-slate-500">These are the core principles behind your daily actions. Click each one to learn more.</p>
                 </div>
                 <div id="pillars-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -152,7 +186,7 @@
 
             <section id="skills" class="view hidden">
                 <div class="text-center mb-8">
-                    <h2 class="text-3xl font-bold text-slate-800 mb-2">Level Up Your Skills!</h2>
+                    <h2 class="text-3xl font-bold text-slate-700 mb-2">Level Up Your Skills!</h2>
                     <p class="text-slate-500">Explore new interests and develop valuable abilities. Click each skill area to get started!</p>
                 </div>
                 <div id="skills-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -161,29 +195,29 @@
 
             <section id="schedule" class="view hidden">
                 <div class="text-center mb-8">
-                    <h2 class="text-3xl font-bold text-slate-800 mb-2">Your Daily Blueprint</h2>
+                    <h2 class="text-3xl font-bold text-slate-700 mb-2">Your Daily Blueprint</h2>
                     <p class="text-slate-500">A template for success. Use this to structure your days.</p>
                 </div>
                 <div class="flex justify-center mb-6">
-                    <button id="weekday-btn" class="schedule-btn bg-amber-500 text-white py-2 px-6 rounded-l-lg font-semibold">Weekday</button>
-                    <button id="weekend-btn" class="schedule-btn bg-slate-200 text-slate-600 py-2 px-6 rounded-r-lg font-semibold">Weekend</button>
+                    <button id="weekday-btn" class="schedule-btn bg-amber-500 text-white py-2 px-6 rounded-l-lg font-semibold shadow-md hover:shadow-lg transition-shadow">Weekday</button>
+                    <button id="weekend-btn" class="schedule-btn bg-slate-200 text-slate-600 py-2 px-6 rounded-r-lg font-semibold shadow-md hover:shadow-lg transition-shadow">Weekend</button>
                 </div>
-                <div id="schedule-content" class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg max-w-4xl mx-auto">
+                <div id="schedule-content" class="bg-white p-6 sm:p-8 rounded-2xl shadow-xl border border-slate-100 max-w-4xl mx-auto">
                 </div>
             </section>
         </main>
 
     </div>
 
-    <div id="task-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full">
+    <div id="task-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full border border-slate-200">
             <h3 class="font-bold text-2xl text-slate-800 mb-4">Day <span id="modal-day"></span> Mission</h3>
             <p id="modal-task" class="text-slate-600 mb-6"></p>
-            <button id="close-modal-btn" class="w-full bg-slate-200 text-slate-700 font-bold py-2 px-4 rounded-lg hover:bg-slate-300 transition-colors">Close</button>
+            <button id="close-modal-btn" class="w-full bg-slate-200 text-slate-700 font-bold py-2 px-4 rounded-lg hover:bg-slate-300 transition-colors shadow-sm">Close</button>
         </div>
     </div>
     
-    <div id="message-box" class="fixed bottom-5 right-5 bg-green-500 text-white py-3 px-5 rounded-lg shadow-xl transform translate-y-20 opacity-0 transition-all duration-500">
+    <div id="message-box" class="fixed bottom-5 right-5 bg-green-500 text-white py-3 px-5 rounded-lg shadow-xl transform translate-y-20 opacity-0 transition-all duration-500 z-50">
         Task marked as complete!
     </div>
 
@@ -437,14 +471,14 @@
                 dayEl.className = 'day-cell h-20 sm:h-24 flex items-center justify-center font-bold text-xl rounded-lg cursor-pointer transition-all duration-300';
                 dayEl.textContent = task.day;
                 
-                let baseClasses = 'bg-white shadow-md hover:shadow-xl hover:-translate-y-1';
+                let baseClasses = 'bg-white shadow-md hover:shadow-xl hover:-translate-y-1 border border-slate-100';
                 
                 if (AppState.completedDays.has(task.day)) {
-                    baseClasses = 'bg-green-100 text-green-700 shadow-sm';
+                    baseClasses = 'bg-green-100 text-green-700 shadow-sm border border-green-200';
                 }
                 
                 if (task.day === AppState.today) {
-                    baseClasses += ' ring-2 ring-amber-500';
+                    baseClasses += ' ring-2 ring-amber-500 ring-offset-2'; /* Added ring-offset for better highlight */
                 }
                 
                 dayEl.classList.add(...baseClasses.split(' '));
@@ -458,27 +492,21 @@
             grid.innerHTML = '';
             pillarsData.forEach(pillar => {
                 grid.innerHTML += `
-                    <div class="pillar-card bg-white p-6 rounded-2xl shadow-lg cursor-pointer hover:shadow-xl transition-shadow relative" data-pillar-id="${pillar.id}">
-                        <div class="flex items-center mb-3">
+                    <div class="pillar-card bg-white p-6 rounded-2xl shadow-lg cursor-pointer hover:shadow-xl transition-shadow relative border border-slate-100" data-pillar-id="${pillar.id}">
+                        <div class="flex items-center mb-3 pillar-header">
                             <span class="text-3xl mr-4">${pillar.icon}</span>
                             <h4 class="font-bold text-xl text-slate-800">${pillar.title}</h4>
                         </div>
                         <p class="pillar-content text-slate-600 hidden">${pillar.content}</p>
-                        <span class="expand-toggle-icon absolute top-6 right-6">▼</span>
+                        <span class="expand-toggle-icon">▼</span>
                     </div>
                 `;
             });
             document.querySelectorAll('.pillar-card').forEach(card => {
-                card.addEventListener('click', () => {
-                    // Close all other open pillar cards first
-                    document.querySelectorAll('.pillar-card.expanded').forEach(openCard => {
-                        if (openCard !== card) { // Don't close the card that was just clicked
-                            openCard.querySelector('.pillar-content').classList.add('hidden');
-                            openCard.classList.remove('expanded');
-                        }
-                    });
-                    // Toggle the clicked card's content
-                    card.querySelector('.pillar-content').classList.toggle('hidden');
+                const header = card.querySelector('.pillar-header');
+                header.addEventListener('click', () => {
+                    const content = card.querySelector('.pillar-content');
+                    content.classList.toggle('hidden');
                     card.classList.toggle('expanded');
                 });
             });
@@ -504,11 +532,11 @@
                 }).join('');
 
                 grid.innerHTML += `
-                    <div class="skill-card bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow relative">
-                        <div class="flex items-center mb-3 cursor-pointer skill-header" data-skill-id="${skill.id}">
+                    <div class="skill-card bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow relative border border-slate-100">
+                        <div class="flex items-center mb-3 skill-header" data-skill-id="${skill.id}">
                             <span class="text-3xl mr-4">${skill.icon}</span>
                             <h4 class="font-bold text-xl text-slate-800">${skill.title}</h4>
-                            <span class="expand-toggle-icon ml-auto">▼</span>
+                            <span class="expand-toggle-icon">▼</span>
                         </div>
                         
                         <div class="skill-content-wrapper hidden">
@@ -529,16 +557,6 @@
             document.querySelectorAll('.skill-card .skill-header').forEach(header => {
                 header.addEventListener('click', (event) => {
                     const clickedCard = header.closest('.skill-card');
-
-                    // Close any currently open skill cards, excluding the one just clicked
-                    document.querySelectorAll('.skill-card.expanded').forEach(openCard => {
-                        if (openCard !== clickedCard) {
-                            openCard.querySelector('.skill-content-wrapper').classList.add('hidden');
-                            openCard.classList.remove('expanded');
-                        }
-                    });
-
-                    // Toggle the clicked card's content
                     const contentWrapper = clickedCard.querySelector('.skill-content-wrapper');
                     contentWrapper.classList.toggle('hidden');
                     clickedCard.classList.toggle('expanded');
@@ -572,15 +590,15 @@
             const weekendBtn = document.getElementById('weekend-btn');
 
             if (type === 'weekday') {
-                weekdayBtn.classList.add('bg-amber-500', 'text-white');
+                weekdayBtn.classList.add('bg-amber-500', 'text-white', 'shadow-md');
                 weekdayBtn.classList.remove('bg-slate-200', 'text-slate-600');
                 weekendBtn.classList.add('bg-slate-200', 'text-slate-600');
-                weekendBtn.classList.remove('bg-amber-500', 'text-white');
+                weekendBtn.classList.remove('bg-amber-500', 'text-white', 'shadow-md');
             } else {
-                weekendBtn.classList.add('bg-amber-500', 'text-white');
+                weekendBtn.classList.add('bg-amber-500', 'text-white', 'shadow-md');
                 weekendBtn.classList.remove('bg-slate-200', 'text-slate-600');
                 weekdayBtn.classList.add('bg-slate-200', 'text-slate-600');
-                weekdayBtn.classList.remove('bg-amber-500', 'text-white');
+                weekdayBtn.classList.remove('bg-amber-500', 'text-white', 'shadow-md');
             }
         }
 
@@ -595,10 +613,10 @@
                 datasets: [{
                     data: [completedCount, remainingCount],
                     backgroundColor: [
-                        '#10b981',
-                        '#e5e7eb'
+                        '#10b981', // Green-500
+                        '#cbd5e1'  // Slate-300 for remaining
                     ],
-                    borderColor: '#f8f7f4',
+                    borderColor: '#f0f4f8', /* Match body background */
                     borderWidth: 4,
                     hoverOffset: 4
                 }]
@@ -641,7 +659,7 @@
                                 display: true,
                                 text: chartTitle,
                                 font: {
-                                    size: 16,
+                                    size: 18, /* Slightly larger title */
                                     weight: 'bold'
                                 },
                                 color: '#334155'
