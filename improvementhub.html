@@ -49,25 +49,23 @@
                 height: 350px;
             }
         }
-        .pillar-content.hidden, .skill-content-wrapper.hidden {
+        /* Hidden class for views and detail sections */
+        .view.hidden, .detail-view.hidden {
             display: none;
         }
         .pillar-card, .skill-card {
             position: relative;
             overflow: hidden; /* Ensures content doesn't spill on toggle */
         }
-        /* Adjusted positioning for the toggle icon for better grouping */
-        .expand-toggle-icon {
+        /* Icon styling (no longer toggling transform on card expanded state) */
+        .view-detail-icon {
             font-size: 1.5rem;
             color: #f59e0b;
             transition: transform 0.3s ease;
             position: absolute; /* Position relative to the card */
             top: 1.5rem; /* Consistent with padding */
             right: 1.5rem; /* Consistent with padding */
-        }
-        .pillar-card.expanded .expand-toggle-icon,
-        .skill-card.expanded .expand-toggle-icon {
-            transform: rotate(180deg);
+            line-height: 1; /* Align vertically */
         }
         .progress-message {
             margin-top: 1rem;
@@ -75,7 +73,7 @@
             font-weight: 500;
             color: #475569;
         }
-        .skill-task {
+        .skill-task, .pillar-task {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -85,13 +83,13 @@
             margin-bottom: 0.5rem;
             border: 1px solid #fcd34d; /* Amber-300 border */
         }
-        .skill-task.completed {
+        .skill-task.completed, .pillar-task.completed {
             background-color: #d1fae5; /* Green-100 */
             color: #065f46; /* Green-800 */
             text-decoration: line-through;
             border-color: #34d399; /* Green-400 border */
         }
-        .skill-task-btn {
+        .skill-task-btn, .pillar-task-btn {
             padding: 0.25rem 0.75rem;
             font-size: 0.875rem;
             font-weight: 600;
@@ -99,31 +97,30 @@
             transition: all 0.2s ease;
             white-space: nowrap; /* Prevent button text from wrapping */
         }
-        .skill-task-btn:not(:disabled) {
+        .skill-task-btn:not(:disabled), .pillar-task-btn:not(:disabled) {
             background-color: #fcd34d; /* Amber-300 */
             color: #78350f; /* Amber-900 */
         }
-        .skill-task-btn:not(:disabled):hover {
+        .skill-task-btn:not(:disabled):hover, .pillar-task-btn:not(:disabled):hover {
             background-color: #fbbf24; /* Amber-400 */
             box-shadow: 0 2px 5px rgba(252, 211, 77, 0.5); /* Subtle shadow on hover */
         }
-        .skill-task-btn:disabled {
+        .skill-task-btn:disabled, .pillar-task-btn:disabled {
             background-color: #a7f3d0; /* Green-200 */
             color: #065f46; /* Green-800 */
             cursor: not-allowed;
         }
 
-        /* Ensure card height adjusts naturally when content expands */
-        .pillar-card.expanded, .skill-card.expanded {
-            height: auto;
-        }
-
         /* Specific styles for card headers to ensure icon is within the clickable area */
-        .pillar-header, .skill-header {
+        .pillar-card-header, .skill-card-header {
             display: flex;
             align-items: center;
             cursor: pointer;
             padding-right: 3rem; /* Make space for the absolute icon */
+            min-height: 48px; /* Ensure consistent height for header */
+        }
+        .pillar-card-header h4, .skill-card-header h4 {
+            flex-grow: 1; /* Allow title to take available space */
         }
     </style>
 </head>
@@ -144,6 +141,7 @@
         </nav>
 
         <main>
+            <!-- Dashboard Section -->
             <section id="dashboard" class="view">
                 <div class="text-center mb-12">
                     <h2 class="text-3xl font-bold text-slate-700 mb-2">✨ Today's Focus ✨</h2>
@@ -166,6 +164,7 @@
                 </div>
             </section>
 
+            <!-- 90-Day Plan Section -->
             <section id="plan" class="view hidden">
                 <div class="text-center mb-8">
                     <h2 class="text-3xl font-bold text-slate-700 mb-2">Your 90-Day Calendar</h2>
@@ -175,24 +174,72 @@
                 </div>
             </section>
 
+            <!-- Pillars Main Grid Section -->
             <section id="pillars" class="view hidden">
                 <div class="text-center mb-8">
                     <h2 class="text-3xl font-bold text-slate-700 mb-2">The Six Pillars of Your Glow-Up</h2>
                     <p class="text-slate-500">These are the core principles behind your daily actions. Click each one to learn more.</p>
                 </div>
                 <div id="pillars-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Pillar cards will be rendered here by JS -->
                 </div>
             </section>
 
+            <!-- Pillar Detail View Section (Hidden by default) -->
+            <section id="pillar-detail-view" class="detail-view hidden p-4 bg-white rounded-2xl shadow-xl border border-slate-100 max-w-4xl mx-auto">
+                <button id="back-to-pillars-btn" class="text-amber-500 hover:text-amber-600 font-semibold mb-6 flex items-center">
+                    <span class="text-xl mr-2">←</span> Back to Pillars
+                </button>
+                <div class="flex items-center mb-4">
+                    <span id="pillar-detail-icon" class="text-4xl mr-4"></span>
+                    <h3 id="pillar-detail-title" class="font-bold text-2xl text-slate-800"></h3>
+                </div>
+                <p id="pillar-detail-content" class="text-slate-600 mb-6 leading-relaxed"></p>
+
+                <h4 class="font-semibold text-xl text-slate-700 mb-3">Actionable Steps:</h4>
+                <div id="pillar-detail-tasks" class="space-y-2 mb-6">
+                    <!-- Pillar tasks will be rendered here by JS -->
+                </div>
+                 <p class="mt-4 text-sm font-medium text-slate-600">Progress: <span id="pillar-progress-text" class="font-bold text-amber-600">0%</span> of tasks completed for this pillar.</p>
+                <div class="w-full bg-slate-200 rounded-full h-2.5 mt-2">
+                    <div id="pillar-progress-bar" class="bg-amber-500 h-2.5 rounded-full" style="width: 0%"></div>
+                </div>
+            </section>
+
+
+            <!-- Skills Main Grid Section -->
             <section id="skills" class="view hidden">
                 <div class="text-center mb-8">
                     <h2 class="text-3xl font-bold text-slate-700 mb-2">Level Up Your Skills!</h2>
                     <p class="text-slate-500">Explore new interests and develop valuable abilities. Click each skill area to get started!</p>
                 </div>
                 <div id="skills-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Skill cards will be rendered here by JS -->
                 </div>
             </section>
 
+            <!-- Skill Detail View Section (Hidden by default) -->
+            <section id="skill-detail-view" class="detail-view hidden p-4 bg-white rounded-2xl shadow-xl border border-slate-100 max-w-4xl mx-auto">
+                <button id="back-to-skills-btn" class="text-amber-500 hover:text-amber-600 font-semibold mb-6 flex items-center">
+                    <span class="text-xl mr-2">←</span> Back to Skills
+                </button>
+                <div class="flex items-center mb-4">
+                    <span id="skill-detail-icon" class="text-4xl mr-4"></span>
+                    <h3 id="skill-detail-title" class="font-bold text-2xl text-slate-800"></h3>
+                </div>
+                <p id="skill-detail-content" class="text-slate-600 mb-6 leading-relaxed"></p>
+
+                <h4 class="font-semibold text-xl text-slate-700 mb-3">Practice Tasks:</h4>
+                <div id="skill-detail-tasks" class="space-y-2 mb-6">
+                    <!-- Skill tasks will be rendered here by JS -->
+                </div>
+                <p class="mt-4 text-sm font-medium text-slate-600">Progress: <span id="skill-progress-text" class="font-bold text-amber-600">0%</span> of tasks completed for this skill.</p>
+                <div class="w-full bg-slate-200 rounded-full h-2.5 mt-2">
+                    <div id="skill-progress-bar" class="bg-amber-500 h-2.5 rounded-full" style="width: 0%"></div>
+                </div>
+            </section>
+
+            <!-- Daily Schedule Section -->
             <section id="schedule" class="view hidden">
                 <div class="text-center mb-8">
                     <h2 class="text-3xl font-bold text-slate-700 mb-2">Your Daily Blueprint</h2>
@@ -209,6 +256,7 @@
 
     </div>
 
+    <!-- Modals (Task Modal and Message Box) -->
     <div id="task-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
         <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full border border-slate-200">
             <h3 class="font-bold text-2xl text-slate-800 mb-4">Day <span id="modal-day"></span> Mission</h3>
@@ -228,7 +276,8 @@
             currentView: 'dashboard',
             today: 1,
             completedDays: new Set(),
-            completedSkillTasks: {}, // New: Stores completed skill tasks, e.g., { 'coding': [0, 2], 'gaming': [1] }
+            completedSkillTasks: {}, // Stores completed skill tasks, e.g., { 'coding': [0, 2], 'gaming': [1] }
+            completedPillarTasks: {}, // New: Stores completed pillar tasks
             startDate: null,
             lastVisitDate: null
         };
@@ -316,83 +365,192 @@
         });
 
         const pillarsData = [
-            { id: 'nourish', icon: '🍎', title: 'Nourish Your Body', content: "Fuel your body for energy and health. Focus on fruits (2-3 servings daily), 'hidden' veggies in dishes like lumpia or spaghetti sauce, and drink 6-8 glasses of water. A smoothie with banana and malunggay is a great nutrient boost." },
-            { id: 'body', icon: '💪', title: 'Move Your Body', content: "Get stronger and boost your mood without a gym. Aim for 30 minutes of movement 5 days a week. Combine 15-20 mins of cardio (dancing, jumping jacks) with 10-15 mins of strength (squats, planks, push-ups)." },
-            { id: 'skin', icon: '✨', title: 'Radiant Skin', content: "Achieve clean, healthy skin with a simple routine. Your #1 priority is cleansing your face gently with mild soap and water every morning and night. For sun protection, seek shade, wear a cap, or use an umbrella, especially from 10 AM to 4 PM." },
-            { id: 'hygiene', icon: '💧', title: 'Impeccable Hygiene', content: "Feel and smell fresh all day. Key habits include daily showers (especially after exercise), brushing your teeth twice a day, using deodorant every morning, and wearing completely fresh, clean clothes every day." },
-            { id: 'mind', icon: '🧠', title: 'Sharpen Your Mind', content: "Make learning more effective. Keep a dedicated, organized study space. Use the Pomodoro Technique (25 mins focus, 5 mins break) to avoid burnout. Review your notes for 15 minutes each evening to retain information." },
-            { id: 'style', icon: '👕', title: 'Cultivate Your Style', content: "Express yourself and feel confident. Use Pinterest for inspiration. Master the basics like well-fitting jeans and clean t-shirts. A simple outfit looks great with neat hair and good posture. Pick out your clothes the night before." }
+            {
+                id: 'nourish', icon: '🍎', title: 'Nourish Your Body', content: "Fuel your body for energy and health. Focus on fruits (2-3 servings daily), 'hidden' veggies in dishes like lumpia or spaghetti sauce, and drink 6-8 glasses of water. A smoothie with banana and malunggay is a great nutrient boost.",
+                tasks: [
+                    "Drink 8 glasses of water today.",
+                    "Eat at least 2 servings of fruit.",
+                    "Include a vegetable in your lunch and dinner.",
+                    "Try a new healthy vegetable or fruit you haven't eaten before.",
+                    "Swap one sugary drink for water or unsweetened tea.",
+                    "Help prepare a healthy meal for your family.",
+                    "Identify one 'hidden' vegetable you can add to a common dish.",
+                    "Plan your snacks for tomorrow to be healthy options.",
+                    "Avoid processed snacks for one day.",
+                    "Read food labels to identify added sugars in one item."
+                ]
+            },
+            {
+                id: 'body', icon: '💪', title: 'Move Your Body', content: "Get stronger and boost your mood without a gym. Aim for 30 minutes of movement 5 days a week. Combine 15-20 mins of cardio (dancing, jumping jacks) with 10-15 mins of strength (squats, planks, push-ups).",
+                tasks: [
+                    "Go for a 20-minute brisk walk.",
+                    "Do 3 sets of 10 squats.",
+                    "Hold a plank for 30 seconds (or accumulate 30 seconds with breaks).",
+                    "Do 3 sets of 15 jumping jacks.",
+                    "Try a 15-minute dance workout from YouTube.",
+                    "Help with an active chore for 20 minutes (e.g., sweeping, gardening).",
+                    "Stretch for 10 minutes before or after your movement session.",
+                    "Take the stairs instead of an elevator/escalator today.",
+                    "Do 3 sets of 5 push-ups (on knees if needed).",
+                    "Explore a new type of home exercise (e.g., yoga, calisthenics)."
+                ]
+            },
+            {
+                id: 'skin', icon: '✨', title: 'Radiant Skin', content: "Achieve clean, healthy skin with a simple routine. Your #1 priority is cleansing your face gently with mild soap and water every morning and night. For sun protection, seek shade, wear a cap, or use an umbrella, especially from 10 AM to 4 PM.",
+                tasks: [
+                    "Wash your face gently morning and night.",
+                    "Apply a simple moisturizer after washing your face.",
+                    "Drink an extra glass of water to support skin hydration.",
+                    "Wear a cap or use an umbrella when outside in the sun.",
+                    "Avoid touching your face unnecessarily throughout the day.",
+                    "Gently pat your face dry instead of rubbing after washing.",
+                    "Identify your skin type (e.g., oily, dry, combination) with a simple observation.",
+                    "Change your pillowcase today for cleaner sleep.",
+                    "Learn about the importance of SPF (Sun Protection Factor).",
+                    "Ensure you're removing all makeup before bed."
+                ]
+            },
+            {
+                id: 'hygiene', icon: '💧', title: 'Impeccable Hygiene', content: "Feel and smell fresh all day. Key habits include daily showers (especially after exercise), brushing your teeth twice a day, using deodorant every morning, and wearing completely fresh, clean clothes every day.",
+                tasks: [
+                    "Take a refreshing shower/bath today.",
+                    "Brush your teeth for 2 minutes, twice today.",
+                    "Apply deodorant/antiperspirant in the morning.",
+                    "Wear clean, fresh clothes today.",
+                    "Floss your teeth once today.",
+                    "Clean your toothbrush and its holder.",
+                    "Use mouthwash after brushing your teeth.",
+                    "Trim your nails if needed.",
+                    "Help with laundry, focusing on your own clothes.",
+                    "Ensure your shoes are clean and odor-free."
+                ]
+            },
+            {
+                id: 'mind', icon: '🧠', title: 'Sharpen Your Mind', content: "Make learning more effective. Keep a dedicated, organized study space. Use the Pomodoro Technique (25 mins focus, 5 mins break) to avoid burnout. Review your notes for 15 minutes each evening to retain information.",
+                tasks: [
+                    "Organize your study space for 15 minutes.",
+                    "Use the Pomodoro Technique (25 min focus, 5 min break) for a study session.",
+                    "Spend 15 minutes reviewing notes from a challenging subject.",
+                    "Read a non-fiction article or a chapter from a book for 20 minutes.",
+                    "Practice mindfulness with 5 minutes of deep breathing.",
+                    "Write down 3 things you are grateful for today.",
+                    "Watch an educational video or documentary for 30 minutes.",
+                    "Solve a challenging puzzle or brain teaser.",
+                    "Learn 5 new words and their meanings.",
+                    "Reflect on your day for 10 minutes before bed."
+                ]
+            },
+            {
+                id: 'style', icon: '👕', title: 'Cultivate Your Style', content: "Express yourself and feel confident. Use Pinterest for inspiration. Master the basics like well-fitting jeans and clean t-shirts. A simple outfit looks great with neat hair and good posture. Pick out your clothes the night before.",
+                tasks: [
+                    "Choose an outfit for tomorrow tonight.",
+                    "Ensure your hair is neat and styled.",
+                    "Practice good posture for 5 minutes in front of a mirror.",
+                    "Iron or steam one of your favorite shirts.",
+                    "Identify 3 items in your wardrobe that fit well.",
+                    "Create a small mood board (digital or physical) of styles you like.",
+                    "Learn a new, simple hairstyle or way to tie a scarf.",
+                    "Accessorize your outfit with one simple item (e.g., watch, simple necklace).",
+                    "Organize a small section of your closet.",
+                    "Take a photo of an outfit you feel confident in."
+                ]
+            }
         ];
 
         const skillsData = [
             {
                 id: 'coding', icon: '💻', title: 'Coding & Digital', content: 'Learn the fundamentals of coding and digital literacy. Start with visual programming and gradually move to text-based languages.', tasks: [
-                    "Explore a 'Hello World' tutorial in Scratch or Python.",
-                    "Learn basic HTML tags (e.g., `<p>`, `<h1>`, `<a>`).",
-                    "Understand how to save and open a simple text file.",
-                    "Practice basic touch typing for 15 minutes.",
-                    "Watch a short video on internet safety and privacy.",
-                    "Attempt a simple coding challenge (e.g., make a variable count to 10).",
+                    "Complete a 'Hello World' tutorial in Scratch or Python.",
+                    "Learn and use 3 basic HTML tags (e.g., `<p>`, `<h1>`, `<a>`).",
+                    "Understand how to save and open a simple text file on your computer.",
+                    "Practice basic touch typing for 15 minutes using an online tool.",
+                    "Watch a short (10-15 min) video on internet safety and privacy.",
+                    "Attempt a simple coding challenge, like making a variable count to 10.",
                     "Create a very basic webpage with your name and favorite color.",
-                    "Learn about keyboard shortcuts for copying and pasting.",
-                    "Explore a coding game or puzzle website (e.g., Code.org, Lightbot).",
-                    "Understand what an algorithm is with a real-world example (e.g., making a sandwich)."
+                    "Learn about common keyboard shortcuts for copying, pasting, and undoing.",
+                    "Explore a coding game or puzzle website (e.g., Code.org, Lightbot) for 20 minutes.",
+                    "Understand what an algorithm is with a real-world example (e.g., making a sandwich).",
+                    "Identify the main components of a computer (e.g., CPU, RAM, storage).",
+                    "Learn to use a simple online calculator for basic operations.",
+                    "Explore how to safely download and install a free program.",
+                    "Understand what a 'browser' is and how it works.",
+                    "Set up a simple online account with a strong password."
                 ]
             },
             {
                 id: 'creative', icon: '🎨', title: 'Creative Arts', content: 'Unleash your creativity through various artistic expressions. No prior experience needed!', tasks: [
-                    "Draw 5 simple shapes from observation (e.g., a cup, a book).",
-                    "Listen to a new music genre for 15 minutes.",
-                    "Write a short paragraph describing your favorite place.",
-                    "Experiment with drawing using only circles and squares.",
-                    "Learn 3 basic chords on a guitar or ukulele (if available).",
-                    "Try a simple origami fold from an online tutorial.",
-                    "Sketch a self-portrait (doesn't have to be perfect!).",
-                    "Create a collage using old magazines or printed images.",
-                    "Listen actively to a piece of classical music and identify instruments.",
-                    "Write a short, rhyming poem about nature."
+                    "Draw 5 simple shapes from observation (e.g., a cup, a book, a phone).",
+                    "Listen actively to a new music genre for 15 minutes, noting instruments or feelings.",
+                    "Write a short paragraph (5-7 sentences) describing your favorite place or a recent dream.",
+                    "Experiment with drawing using only circles and squares to create an object.",
+                    "Learn 3 basic chords on a guitar, ukulele, or keyboard (if available).",
+                    "Try a simple origami fold from an online tutorial, aiming for neatness.",
+                    "Sketch a self-portrait (it doesn't have to be perfect, just practice!).",
+                    "Create a small collage using old magazines, newspapers, or printed images.",
+                    "Listen to a piece of classical music and try to identify at least two different instruments.",
+                    "Write a short, rhyming poem (4-6 lines) about nature or your daily routine.",
+                    "Try a simple drawing prompt from an online generator (e.g., 'a smiling cloud').",
+                    "Hum or sing a simple melody you just made up.",
+                    "Describe a piece of art or music to a friend or family member.",
+                    "Find an interesting pattern in your surroundings and sketch it.",
+                    "Learn about a famous artist or musician you admire."
                 ]
             },
             {
                 id: 'gaming', icon: '🎮', title: 'Gaming & Hobbies', content: 'Beyond just playing, learn about game design, strategy, and responsible gaming. Discover new hobbies!', tasks: [
-                    "Play a strategy game for 30 minutes, focusing on decision-making.",
-                    "Set a timer for your gaming session and stick to it.",
-                    "Explore a new board game or card game with family/friends.",
+                    "Play a strategy game for 30 minutes, actively focusing on your decision-making process.",
+                    "Set a timer for your gaming session and stick to it strictly.",
+                    "Explore a new board game or card game with family or friends.",
                     "Learn about the history or development of your favorite game genre.",
-                    "Try a logic puzzle (Sudoku, crossword) instead of a screen.",
-                    "Organize your gaming space or hobby supplies.",
-                    "Watch a tutorial on improving your skills in a specific game.",
-                    "Research a new hobby you'd like to try (e.g., bird watching, model building).",
+                    "Try a logic puzzle (Sudoku, crossword, or a brain teaser app) instead of screen time.",
+                    "Organize your gaming space or hobby supplies for 15 minutes.",
+                    "Watch a tutorial on improving your skills in a specific game you play.",
+                    "Research a new hobby you'd like to try (e.g., bird watching, model building, collecting).",
                     "Engage in positive discussion about a game/hobby online (avoiding toxicity).",
-                    "Teach someone else a simple game or hobby you enjoy."
+                    "Teach someone else a simple game or hobby you enjoy.",
+                    "Identify 3 positive aspects of gaming for you (e.g., problem-solving, social connection).",
+                    "Experiment with a game from a genre you don't usually play.",
+                    "Learn about the concept of 'game balance' in design.",
+                    "Limit your gaming session to 1 hour today, and use the extra time for another activity.",
+                    "Discover a new podcast or documentary about gaming or a hobby."
                 ]
             },
             {
                 id: 'life-skills', icon: '🛠️', title: 'Practical Life Skills', content: 'Master essential life skills that will make you more independent and capable.', tasks: [
                     "Make your bed perfectly in under 5 minutes.",
-                    "Learn how to properly wash dishes by hand.",
-                    "Prepare a simple healthy snack (e.g., fruit salad).",
-                    "Sort your laundry by color (lights and darks).",
-                    "Learn how to tie a basic knot (e.g., square knot).",
+                    "Learn how to properly wash dishes by hand (clean, rinse, dry).",
+                    "Prepare a simple healthy snack for yourself (e.g., fruit salad, sandwich).",
+                    "Sort your laundry by color (lights, darks, delicates).",
+                    "Learn how to tie a basic knot (e.g., square knot, slip knot) from a tutorial.",
                     "Help clean a bathroom or kitchen counter thoroughly.",
-                    "Prepare a simple packed lunch for yourself.",
-                    "Learn to read a bus schedule or simple map.",
-                    "Fix a loose button on a shirt (ask for help if needed).",
-                    "Write a thank-you note to someone who helped you."
+                    "Prepare a simple packed lunch for yourself for school/outing.",
+                    "Learn to read a bus schedule or navigate a simple map (physical or digital).",
+                    "Fix a loose button on a shirt (ask for help if needed, but try to understand the process).",
+                    "Write a thank-you note or send a thank-you message to someone who helped you.",
+                    "Learn how to check if your phone battery is charging correctly.",
+                    "Identify 3 common household tools and their uses (e.g., screwdriver, hammer).",
+                    "Learn how to safely dispose of different types of waste (e.g., batteries, plastic bottles).",
+                    "Practice introducing yourself confidently to a new person.",
+                    "Understand a basic recipe and gather all the ingredients for it."
                 ]
             },
             { // NEW SKILL ADDED
                 id: 'financial-literacy', icon: '💰', title: 'Financial Literacy', content: 'Gain a basic understanding of money management, saving, and smart spending.', tasks: [
-                    "Identify 3 common expenses in your household.",
-                    "Learn the difference between wants and needs.",
-                    "Create a simple savings goal (e.g., for a new book or small toy).",
-                    "Understand what 'budgeting' means in simple terms.",
-                    "Research how money is earned (e.g., through jobs, allowances).",
-                    "List 3 ways to save money daily.",
+                    "Identify 3 common expenses in your household (e.g., electricity, food, internet).",
+                    "Learn the difference between 'wants' and 'needs' with examples.",
+                    "Create a simple savings goal (e.g., for a new book, small toy, or ice cream).",
+                    "Understand what 'budgeting' means in simple terms (planning how you spend money).",
+                    "Research how money is earned (e.g., through jobs, allowances, small tasks).",
+                    "List 3 simple ways to save money daily (e.g., turn off lights, pack lunch).",
                     "Learn about the concept of 'delayed gratification' (saving now for something better later).",
-                    "Practice counting change accurately.",
-                    "Understand why saving is important for the future.",
-                    "Set up a small piggy bank or savings jar and start putting money in it."
+                    "Practice counting change accurately when making a small purchase.",
+                    "Understand why saving is important for future goals.",
+                    "Set up a small piggy bank or savings jar and start putting money in it regularly.",
+                    "Identify 2 types of income (e.g., allowance, earnings from a small job).",
+                    "Learn what a 'bill' is and why people pay them.",
+                    "Discuss with an adult how much a common item costs (e.g., a gallon of milk, a movie ticket).",
+                    "Understand the difference between cash and digital money.",
+                    "Set a small weekly spending limit for yourself and try to stick to it."
                 ]
             }
         ];
@@ -427,7 +585,12 @@
         let progressChartInstance = null;
         
         function updateView(viewName) {
+            // Hide all main views
             document.querySelectorAll('.view').forEach(view => view.classList.add('hidden'));
+            // Hide all detail views
+            document.querySelectorAll('.detail-view').forEach(detailView => detailView.classList.add('hidden'));
+
+            // Show the requested main view
             document.getElementById(viewName).classList.remove('hidden');
 
             document.querySelectorAll('.nav-link').forEach(link => {
@@ -493,21 +656,77 @@
             pillarsData.forEach(pillar => {
                 grid.innerHTML += `
                     <div class="pillar-card bg-white p-6 rounded-2xl shadow-lg cursor-pointer hover:shadow-xl transition-shadow relative border border-slate-100" data-pillar-id="${pillar.id}">
-                        <div class="flex items-center mb-3 pillar-header">
+                        <div class="pillar-card-header">
                             <span class="text-3xl mr-4">${pillar.icon}</span>
                             <h4 class="font-bold text-xl text-slate-800">${pillar.title}</h4>
                         </div>
-                        <p class="pillar-content text-slate-600 hidden">${pillar.content}</p>
-                        <span class="expand-toggle-icon">▼</span>
+                        <span class="view-detail-icon">→</span>
                     </div>
                 `;
             });
             document.querySelectorAll('.pillar-card').forEach(card => {
-                const header = card.querySelector('.pillar-header');
-                header.addEventListener('click', () => {
-                    const content = card.querySelector('.pillar-content');
-                    content.classList.toggle('hidden');
-                    card.classList.toggle('expanded');
+                card.addEventListener('click', () => {
+                    const pillarId = card.dataset.pillarId;
+                    showPillarDetail(pillarId);
+                });
+            });
+        }
+
+        function showPillarDetail(pillarId) {
+            const pillar = pillarsData.find(p => p.id === pillarId);
+            if (!pillar) return;
+
+            // Hide main pillars view and show detail view
+            document.getElementById('pillars').classList.add('hidden');
+            const detailView = document.getElementById('pillar-detail-view');
+            detailView.classList.remove('hidden');
+
+            // Populate detail view
+            document.getElementById('pillar-detail-icon').textContent = pillar.icon;
+            document.getElementById('pillar-detail-title').textContent = pillar.title;
+            document.getElementById('pillar-detail-content').textContent = pillar.content;
+
+            const tasksContainer = document.getElementById('pillar-detail-tasks');
+            tasksContainer.innerHTML = '';
+            
+            const completedTasks = AppState.completedPillarTasks[pillar.id] || [];
+
+            pillar.tasks.forEach((taskText, index) => {
+                const isCompleted = completedTasks.includes(index);
+                tasksContainer.innerHTML += `
+                    <div class="pillar-task ${isCompleted ? 'completed' : ''}">
+                        <span class="text-slate-700 ${isCompleted ? 'text-green-800' : ''}">${taskText}</span>
+                        <button data-pillar-id="${pillar.id}" data-task-index="${index}" class="pillar-task-btn" ${isCompleted ? 'disabled' : ''}>
+                            ${isCompleted ? 'Done' : 'Mark Done'}
+                        </button>
+                    </div>
+                `;
+            });
+
+            // Update progress
+            const progress = pillar.tasks.length > 0 ? Math.round((completedTasks.length / pillar.tasks.length) * 100) : 0;
+            document.getElementById('pillar-progress-text').textContent = `${progress}%`;
+            document.getElementById('pillar-progress-bar').style.width = `${progress}%`;
+
+            // Add event listeners for new buttons (delegated for efficiency)
+            tasksContainer.querySelectorAll('.pillar-task-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const clickedPillarId = e.target.dataset.pillarId;
+                    const taskIndex = parseInt(e.target.dataset.taskIndex);
+
+                    if (!AppState.completedPillarTasks[clickedPillarId]) {
+                        AppState.completedPillarTasks[clickedPillarId] = [];
+                    }
+
+                    if (!AppState.completedPillarTasks[clickedPillarId].includes(taskIndex)) {
+                        AppState.completedPillarTasks[clickedPillarId].push(taskIndex);
+                        saveState();
+                        // Re-render only the current pillar detail view to update progress and button state
+                        showPillarDetail(clickedPillarId); 
+                        showMessage(`Task completed for ${clickedPillarId}!`);
+                    } else {
+                        showMessage('Task already completed!');
+                    }
                 });
             });
         }
@@ -516,67 +735,77 @@
             const grid = document.getElementById('skills-grid');
             grid.innerHTML = '';
             skillsData.forEach(skill => {
-                const completedTasks = AppState.completedSkillTasks[skill.id] || [];
-                const progress = skill.tasks.length > 0 ? Math.round((completedTasks.length / skill.tasks.length) * 100) : 0;
-
-                let tasksHtml = skill.tasks.map((taskText, index) => {
-                    const isCompleted = completedTasks.includes(index);
-                    return `
-                        <div class="skill-task ${isCompleted ? 'completed' : ''}">
-                            <span class="text-slate-700 ${isCompleted ? 'text-green-800' : ''}">${taskText}</span>
-                            <button data-skill-id="${skill.id}" data-task-index="${index}" class="skill-task-btn" ${isCompleted ? 'disabled' : ''}>
-                                ${isCompleted ? 'Done' : 'Mark Done'}
-                            </button>
-                        </div>
-                    `;
-                }).join('');
-
                 grid.innerHTML += `
-                    <div class="skill-card bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow relative border border-slate-100">
-                        <div class="flex items-center mb-3 skill-header" data-skill-id="${skill.id}">
+                    <div class="skill-card bg-white p-6 rounded-2xl shadow-lg cursor-pointer hover:shadow-xl transition-shadow relative border border-slate-100" data-skill-id="${skill.id}">
+                        <div class="skill-card-header">
                             <span class="text-3xl mr-4">${skill.icon}</span>
                             <h4 class="font-bold text-xl text-slate-800">${skill.title}</h4>
-                            <span class="expand-toggle-icon">▼</span>
                         </div>
-                        
-                        <div class="skill-content-wrapper hidden">
-                            <p class="text-slate-600 mb-4">${skill.content}</p>
-                            <h5 class="font-semibold text-lg text-slate-700 mb-2">Tasks:</h5>
-                            <div class="space-y-2">
-                                ${tasksHtml}
-                            </div>
-                            <p class="mt-4 text-sm font-medium text-slate-600">Progress: <span class="font-bold text-amber-600">${progress}%</span> of tasks completed for this skill.</p>
-                            <div class="w-full bg-slate-200 rounded-full h-2.5 mt-2">
-                                <div class="bg-amber-500 h-2.5 rounded-full" style="width: ${progress}%"></div>
-                            </div>
-                        </div>
+                        <span class="view-detail-icon">→</span>
                     </div>
                 `;
             });
 
-            document.querySelectorAll('.skill-card .skill-header').forEach(header => {
-                header.addEventListener('click', (event) => {
-                    const clickedCard = header.closest('.skill-card');
-                    const contentWrapper = clickedCard.querySelector('.skill-content-wrapper');
-                    contentWrapper.classList.toggle('hidden');
-                    clickedCard.classList.toggle('expanded');
+            document.querySelectorAll('.skill-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const skillId = card.dataset.skillId;
+                    showSkillDetail(skillId);
                 });
             });
+        }
 
-            document.querySelectorAll('.skill-task-btn').forEach(button => {
+        function showSkillDetail(skillId) {
+            const skill = skillsData.find(s => s.id === skillId);
+            if (!skill) return;
+
+            // Hide main skills view and show detail view
+            document.getElementById('skills').classList.add('hidden');
+            const detailView = document.getElementById('skill-detail-view');
+            detailView.classList.remove('hidden');
+
+            // Populate detail view
+            document.getElementById('skill-detail-icon').textContent = skill.icon;
+            document.getElementById('skill-detail-title').textContent = skill.title;
+            document.getElementById('skill-detail-content').textContent = skill.content;
+
+            const tasksContainer = document.getElementById('skill-detail-tasks');
+            tasksContainer.innerHTML = '';
+            
+            const completedTasks = AppState.completedSkillTasks[skill.id] || [];
+
+            skill.tasks.forEach((taskText, index) => {
+                const isCompleted = completedTasks.includes(index);
+                tasksContainer.innerHTML += `
+                    <div class="skill-task ${isCompleted ? 'completed' : ''}">
+                        <span class="text-slate-700 ${isCompleted ? 'text-green-800' : ''}">${taskText}</span>
+                        <button data-skill-id="${skill.id}" data-task-index="${index}" class="skill-task-btn" ${isCompleted ? 'disabled' : ''}>
+                            ${isCompleted ? 'Done' : 'Mark Done'}
+                        </button>
+                    </div>
+                `;
+            });
+
+            // Update progress
+            const progress = skill.tasks.length > 0 ? Math.round((completedTasks.length / skill.tasks.length) * 100) : 0;
+            document.getElementById('skill-progress-text').textContent = `${progress}%`;
+            document.getElementById('skill-progress-bar').style.width = `${progress}%`;
+
+            // Add event listeners for new buttons (delegated for efficiency)
+            tasksContainer.querySelectorAll('.skill-task-btn').forEach(button => {
                 button.addEventListener('click', (e) => {
-                    const skillId = e.target.dataset.skillId;
+                    const clickedSkillId = e.target.dataset.skillId;
                     const taskIndex = parseInt(e.target.dataset.taskIndex);
 
-                    if (!AppState.completedSkillTasks[skillId]) {
-                        AppState.completedSkillTasks[skillId] = [];
+                    if (!AppState.completedSkillTasks[clickedSkillId]) {
+                        AppState.completedSkillTasks[clickedSkillId] = [];
                     }
 
-                    if (!AppState.completedSkillTasks[skillId].includes(taskIndex)) {
-                        AppState.completedSkillTasks[skillId].push(taskIndex);
+                    if (!AppState.completedSkillTasks[clickedSkillId].includes(taskIndex)) {
+                        AppState.completedSkillTasks[clickedSkillId].push(taskIndex);
                         saveState();
-                        renderSkills(); // Re-render skills to update UI
-                        showMessage(`Task completed for ${skillId}!`);
+                        // Re-render only the current skill detail view to update progress and button state
+                        showSkillDetail(clickedSkillId);
+                        showMessage(`Task completed for ${clickedSkillId}!`);
                     } else {
                         showMessage('Task already completed!');
                     }
@@ -701,6 +930,7 @@
                 const parsedState = JSON.parse(savedState);
                 AppState.completedDays = new Set(parsedState.completedDays || []);
                 AppState.completedSkillTasks = parsedState.completedSkillTasks || {};
+                AppState.completedPillarTasks = parsedState.completedPillarTasks || {}; // Load new pillar tasks state
                 AppState.startDate = parsedState.startDate ? new Date(parsedState.startDate) : null;
                 AppState.lastVisitDate = parsedState.lastVisitDate || null;
             }
@@ -730,6 +960,7 @@
             const stateToSave = {
                 completedDays: Array.from(AppState.completedDays),
                 completedSkillTasks: AppState.completedSkillTasks,
+                completedPillarTasks: AppState.completedPillarTasks, // Save new pillar tasks state
                 startDate: AppState.startDate ? formatDate(AppState.startDate) : null,
                 lastVisitDate: AppState.lastVisitDate
             };
@@ -761,6 +992,17 @@
                     document.getElementById('task-modal').classList.add('hidden');
                 }
             });
+
+            // Back buttons for detail views
+            document.getElementById('back-to-pillars-btn').addEventListener('click', () => {
+                document.getElementById('pillar-detail-view').classList.add('hidden');
+                document.getElementById('pillars').classList.remove('hidden');
+            });
+            document.getElementById('back-to-skills-btn').addEventListener('click', () => {
+                document.getElementById('skill-detail-view').classList.add('hidden');
+                document.getElementById('skills').classList.remove('hidden');
+            });
+
 
             document.getElementById('weekday-btn').addEventListener('click', () => renderSchedule('weekday'));
             document.getElementById('weekend-btn').addEventListener('click', () => renderSchedule('weekend'));
