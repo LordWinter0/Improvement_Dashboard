@@ -78,7 +78,7 @@
             font-weight: 500;
             color: #475569;
         }
-        .skill-task, .pillar-task {
+        .skill-task, .pillar-task, .daily-skill-task-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -88,19 +88,27 @@
             margin-bottom: 0.5rem;
             border: 1px solid #fcd34d; /* Amber-300 border */
         }
-        .skill-task.completed, .pillar-task.completed {
+        .skill-task.completed, .pillar-task.completed, .daily-skill-task-item.completed {
             background-color: #d1fae5; /* Green-100 */
             color: #065f46; /* Green-800 */
             text-decoration: line-through;
             border-color: #34d399; /* Green-400 border */
         }
-        .skill-task-btn, .pillar-task-btn, .shop-buy-btn, .daily-quest-btn {
+        .skill-task-btn, .pillar-task-btn, .shop-buy-btn, .daily-quest-btn, .daily-skill-task-checkbox {
             padding: 0.25rem 0.75rem;
             font-size: 0.875rem;
             font-weight: 600;
             border-radius: 0.375rem;
             transition: all 0.2s ease;
             white-space: nowrap; /* Prevent button text from wrapping */
+        }
+        .daily-skill-task-checkbox {
+            width: 1.5rem;
+            height: 1.5rem;
+            min-width: 1.5rem;
+            min-height: 1.5rem;
+            accent-color: #f59e0b;
+            cursor: pointer;
         }
         .skill-task-btn:not(:disabled), .pillar-task-btn:not(:disabled), .shop-buy-btn:not(:disabled), .daily-quest-btn:not(:disabled) {
             background-color: #fcd34d; /* Amber-300 */
@@ -200,6 +208,23 @@
             border-color: #fbbf24; /* Amber-400 */
             box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
         }
+        .token-display-box {
+            background-color: #fdf6e7; /* Light yellow background */
+            border: 1px solid #fcd34d; /* Amber border */
+            border-radius: 0.75rem;
+            padding: 0.75rem 1.25rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #78350f; /* Dark amber text */
+            box-shadow: 0 2px 5px rgba(252, 211, 77, 0.2);
+        }
+        .token-display-box .icon {
+            font-size: 1.5rem;
+            line-height: 1;
+        }
     </style>
 </head>
 <body class="text-slate-700">
@@ -249,7 +274,7 @@
                 <a data-view="plan" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">90-Day Plan</a>
                 <a data-view="pillars" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">The Pillars</a>
                 <a data-view="skills" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">Skills</a>
-                <a data-view="daily-quest" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">Daily Quest</a>
+                <a data-view="daily-focus" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">Daily Focus</a>
                 <a data-view="shop" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">Shop</a>
                 <a data-view="schedule" class="nav-link py-4 px-2 sm:px-4 text-sm sm:text-base font-semibold text-slate-600 hover:text-amber-500">Daily Schedule</a>
             </nav>
@@ -362,20 +387,26 @@
                     </div>
                 </section>
 
-                <!-- Daily Quest Section -->
-                <section id="daily-quest" class="view hidden">
+                <!-- Daily Skill Focus Section -->
+                <section id="daily-focus" class="view hidden">
                     <div class="text-center mb-8">
-                        <h2 class="text-3xl font-bold text-slate-700 mb-2">🎯 Daily Quest 🎯</h2>
-                        <p class="text-slate-500">Complete this optional quest for extra Glow Tokens!</p>
-                        <p class="text-lg font-semibold mt-4 text-slate-700">Your Glow Tokens: <span id="tokens-display" class="text-amber-500">0</span> ✨</p>
+                        <h2 class="text-3xl font-bold text-slate-700 mb-2">🎯 Daily Skill Focus 🎯</h2>
+                        <p class="text-slate-500">Complete these tasks to earn Glow Tokens!</p>
+                        <div class="flex justify-center mt-4 mb-6">
+                            <span class="token-display-box">
+                                <span class="icon">✨</span> Your Glow Tokens: <span id="tokens-display">0</span>
+                            </span>
+                        </div>
+                        <p class="text-sm text-slate-500">Next tasks refresh in: <span id="countdown-timer" class="font-semibold text-slate-700"></span></p>
                     </div>
                     <div class="bg-white p-6 rounded-2xl shadow-2xl border border-slate-100 max-w-2xl mx-auto">
-                        <div class="flex items-center mb-4">
-                            <span id="quest-icon" class="text-3xl mr-3">❓</span>
-                            <h3 class="font-bold text-xl text-slate-800">Today's Special Quest:</h3>
+                        <div id="daily-tasks-container" class="space-y-3 mb-6">
+                            <!-- Daily skill tasks will be dynamically loaded here -->
+                            <p class="text-center text-slate-500 italic" id="daily-tasks-loading">Generating daily tasks...</p>
                         </div>
-                        <p id="daily-quest-text" class="text-lg text-slate-600 leading-relaxed mb-6">Loading your quest...</p>
-                        <button id="complete-daily-quest-btn" class="w-full gradient-button text-white font-bold py-3 px-6 rounded-lg shadow-md">Mark Quest Complete</button>
+                        <button id="claim-tokens-btn" class="w-full gradient-button text-white font-bold py-3 px-6 rounded-lg shadow-md" disabled>
+                            Claim Your 3 Tokens! ✨
+                        </button>
                     </div>
                 </section>
 
@@ -384,7 +415,11 @@
                     <div class="text-center mb-8">
                         <h2 class="text-3xl font-bold text-slate-700 mb-2">🛍️ The Glow-Up Shop 🛍️</h2>
                         <p class="text-slate-500">Spend your hard-earned Glow Tokens!</p>
-                        <p class="text-lg font-semibold mt-4 text-slate-700">Your Glow Tokens: <span id="shop-tokens-display" class="text-amber-500">0</span> ✨</p>
+                        <div class="flex justify-center mt-4 mb-6">
+                            <span class="token-display-box">
+                                <span class="icon">✨</span> Your Glow Tokens: <span id="shop-tokens-display">0</span>
+                            </span>
+                        </div>
                     </div>
                     <div id="shop-items-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
                         <!-- Shop items will be rendered here by JS -->
@@ -423,22 +458,24 @@
 
     <script>
         const TOTAL_CHALLENGE_DAYS = 90;
-        const TOKEN_FOR_DAILY_QUEST = 3; // Tokens gained per daily quest
+        const TOKEN_FOR_DAILY_QUEST = 3; // Tokens gained per daily focus completion
+        const MAX_DAILY_SKILL_TASKS = 3; // Max number of daily skill tasks to present
 
         const AppState = {
             currentView: 'dashboard',
-            userName: null, // New: User's name
-            difficulty: 'normal', // New: User's chosen difficulty
-            selectedSkills: new Set(), // New: Skills picked by the user
-            isPersonalized: false, // New: Flag to check if personalization is done
+            userName: null,
+            difficulty: 'normal',
+            selectedSkills: new Set(),
+            isPersonalized: false,
             today: 1,
             completedDays: new Set(),
             completedSkillTasks: {},
             completedPillarTasks: {},
-            tokens: 0, // New: User's tokens
-            dailyQuestCompletedToday: false, // New: Whether today's daily quest is done
-            lastDailyQuestDate: null, // New: Date when last daily quest was generated/completed
-            restDaysAvailable: 0, // New: Count of rest days purchased
+            tokens: 0,
+            dailyFocusTasks: [], // New: Stores the current day's generated skill tasks [{skillId, taskIndex, completed}]
+            dailyFocusCompletedToday: false, // New: Whether today's daily focus is done
+            lastDailyFocusDate: null, // New: Date when last daily focus was generated/completed
+            restDaysAvailable: 0,
             startDate: null,
             lastVisitDate: null
         };
@@ -542,7 +579,7 @@
                 ]
             },
             {
-                id: 'body', icon: '💪', title: 'Move Your Body', content: "Get stronger and boost your mood without a gym. Aim for 30 minutes of movement 5 days a week. Combine 15-20 mins of cardio (dancing, jumping jacks) with 10-15 mins of strength (squats, planks, push-ups).",
+                id: 'body', icon: '�', title: 'Move Your Body', content: "Get stronger and boost your mood without a gym. Aim for 30 minutes of movement 5 days a week. Combine 15-20 mins of cardio (dancing, jumping jacks) with 10-15 mins of strength (squats, planks, push-ups).",
                 tasks: [
                     "Go for a 20-minute brisk walk.",
                     "Do 3 sets of 10 squats.",
@@ -890,14 +927,21 @@
                 name: 'Rest Day',
                 icon: '🛌',
                 description: 'Skip one daily mission! The day will be marked as complete without doing the task.',
-                cost: 10
+                cost: 20 // Increased cost
             },
             {
                 id: 'tip-boost',
-                name: 'Daily Tip Boost',
+                name: 'Instant Tip',
                 icon: '💡',
-                description: 'Get an extra, immediate motivational tip for today!',
-                cost: 5
+                description: 'Get an extra motivational tip right now!',
+                cost: 8 // Increased cost
+            },
+            {
+                id: 'token-bonus',
+                name: 'Token Bonus (Minor)',
+                icon: '✨',
+                description: 'Receive 5 extra Glow Tokens!',
+                cost: 15 // New item
             }
         ];
 
@@ -929,6 +973,44 @@
         };
         
         let progressChartInstance = null;
+        let countdownInterval; // To store the interval ID for the countdown
+
+        // Utility function to format date
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // Utility function to get time until next midnight
+        function getTimeUntilMidnight() {
+            const now = new Date();
+            const midnight = new Date(now);
+            midnight.setHours(24, 0, 0, 0); // Set to next midnight
+            return midnight.getTime() - now.getTime();
+        }
+
+        // Start the countdown timer
+        function startCountdownTimer() {
+            const timerElement = document.getElementById('countdown-timer');
+            if (countdownInterval) clearInterval(countdownInterval); // Clear existing interval
+
+            countdownInterval = setInterval(() => {
+                const timeLeft = getTimeUntilMidnight();
+                if (timeLeft <= 0) {
+                    timerElement.textContent = 'Refreshing now...';
+                    clearInterval(countdownInterval);
+                    // Force a full refresh to get new daily tasks
+                    location.reload(); 
+                } else {
+                    const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                    timerElement.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
         
         function updateView(viewName) {
             // Hide all main views
@@ -948,10 +1030,13 @@
             AppState.currentView = viewName;
 
             // Specific renders for new sections when they become active
-            if (viewName === 'daily-quest') {
-                renderDailyQuest();
+            if (viewName === 'daily-focus') {
+                renderDailyFocus();
+                startCountdownTimer(); // Start/restart timer when viewing daily focus
             } else if (viewName === 'shop') {
                 renderShop();
+            } else {
+                if (countdownInterval) clearInterval(countdownInterval); // Pause timer if not on daily focus
             }
         }
 
@@ -1226,84 +1311,105 @@
             });
         }
 
-        async function renderDailyQuest() {
+        function renderDailyFocus() {
             const todayFormatted = formatDate(new Date());
-            const questTextElement = document.getElementById('daily-quest-text');
-            const questBtn = document.getElementById('complete-daily-quest-btn');
+            const dailyTasksContainer = document.getElementById('daily-tasks-container');
+            const claimTokensBtn = document.getElementById('claim-tokens-btn');
             const tokensDisplay = document.getElementById('tokens-display');
-
             tokensDisplay.textContent = AppState.tokens;
 
-            // Check if a new quest needs to be generated (or if it's a new day)
-            if (AppState.lastDailyQuestDate !== todayFormatted) {
-                AppState.dailyQuestCompletedToday = false;
-                AppState.lastDailyQuestDate = todayFormatted;
-                saveState(); // Save the new quest date immediately
+            // Check if it's a new day or if tasks haven't been generated yet
+            if (AppState.lastDailyFocusDate !== todayFormatted || AppState.dailyFocusTasks.length === 0) {
+                AppState.dailyFocusCompletedToday = false;
+                AppState.lastDailyFocusDate = todayFormatted;
+                AppState.dailyFocusTasks = []; // Clear previous tasks
+
+                let availableSkills = Array.from(AppState.selectedSkills);
+                if (availableSkills.length === 0) {
+                    // If no skills are selected in personalization, pick from all skills
+                    availableSkills = skillsData.map(s => s.id);
+                }
+
+                // Shuffle available skills and pick up to MAX_DAILY_SKILL_TASKS unique tasks
+                const shuffledSkills = availableSkills.sort(() => 0.5 - Math.random());
+                const skillsForToday = shuffledSkills.slice(0, MAX_DAILY_SKILL_TASKS);
+
+                skillsForToday.forEach(skillId => {
+                    const skill = skillsData.find(s => s.id === skillId);
+                    if (skill && skill.tasks.length > 0) {
+                        const randomTaskIndex = Math.floor(Math.random() * skill.tasks.length);
+                        AppState.dailyFocusTasks.push({
+                            skillId: skill.id,
+                            taskIndex: randomTaskIndex,
+                            taskText: skill.tasks[randomTaskIndex],
+                            completed: false
+                        });
+                    }
+                });
+                saveState(); // Save newly generated tasks
             }
 
-            if (AppState.dailyQuestCompletedToday) {
-                questTextElement.textContent = "You've already completed today's quest! Come back tomorrow for a new challenge. �";
-                questBtn.disabled = true;
-                questBtn.classList.remove('gradient-button');
-                questBtn.classList.add('bg-green-500', 'hover:bg-green-500');
+            // Render the tasks
+            dailyTasksContainer.innerHTML = ''; // Clear loading message
+            if (AppState.dailyFocusTasks.length === 0) {
+                dailyTasksContainer.innerHTML = '<p class="text-center text-slate-500 italic">No daily tasks could be generated today. Check your selected skills!</p>';
             } else {
-                questBtn.disabled = false;
-                questBtn.classList.remove('bg-green-500', 'hover:bg-green-500');
-                questBtn.classList.add('gradient-button');
+                AppState.dailyFocusTasks.forEach((task, index) => {
+                    const isCompleted = AppState.dailyFocusTasks[index].completed;
+                    dailyTasksContainer.innerHTML += `
+                        <div class="daily-skill-task-item ${isCompleted ? 'completed' : ''}">
+                            <label class="flex items-center flex-grow cursor-pointer">
+                                <input type="checkbox" class="daily-skill-task-checkbox mr-3" data-task-list-index="${index}" ${isCompleted ? 'checked disabled' : ''}>
+                                <span class="text-slate-700 ${isCompleted ? 'text-green-800' : ''}">
+                                    ${skillsData.find(s => s.id === task.skillId)?.icon || ' '} ${task.taskText}
+                                </span>
+                            </label>
+                        </div>
+                    `;
+                });
 
-                questTextElement.textContent = 'Generating a fun quest for you...';
-                
-                let promptTarget = '';
-                if (AppState.selectedSkills.size > 0) {
-                    // Pick a random selected skill to focus the quest on
-                    const selectedSkillIds = Array.from(AppState.selectedSkills);
-                    const randomSkillId = selectedSkillIds[Math.floor(Math.random() * selectedSkillIds.length)];
-                    const selectedSkillTitle = skillsData.find(s => s.id === randomSkillId)?.title;
-                    promptTarget = `related to the skill '${selectedSkillTitle}'`;
-                } else {
-                    // Fallback to a random pillar if no skills selected
-                    promptTarget = `related to the '${pillarsData[Math.floor(Math.random() * pillarsData.length)].title}' pillar`;
-                }
-
-
-                let chatHistory = [];
-                chatHistory.push({ role: "user", parts: [{ text: `Generate a single, very short (max 2 sentences), fun, and actionable daily quest ${promptTarget} for a self-improvement app. Make it lighthearted and easy to understand.` }] });
-                const payload = { contents: chatHistory };
-                const apiKey = ""; 
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-                try {
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
+                // Add event listeners for checkboxes
+                dailyTasksContainer.querySelectorAll('.daily-skill-task-checkbox').forEach(checkbox => {
+                    checkbox.addEventListener('change', (e) => {
+                        const taskListIndex = parseInt(e.target.dataset.taskListIndex);
+                        AppState.dailyFocusTasks[taskListIndex].completed = e.target.checked;
+                        saveState();
+                        renderDailyFocus(); // Re-render to update UI and button state
                     });
-                    const result = await response.json();
-                    if (result.candidates && result.candidates.length > 0 &&
-                        result.candidates[0].content && result.candidates[0].content.parts &&
-                        result.candidates[0].content.parts.length > 0) {
-                        const questText = result.candidates[0].content.parts[0].text;
-                        document.getElementById('daily-quest-text').textContent = questText;
-                    } else {
-                        document.getElementById('daily-quest-text').textContent = 'Failed to load quest. Try again!';
-                        console.error('LLM response structure unexpected:', result);
-                    }
-                } catch (error) {
-                    document.getElementById('daily-quest-text').textContent = 'Network error fetching quest. Check your connection.';
-                    console.error('Error fetching daily quest:', error);
-                }
+                });
+            }
+            
+            // Update the "Claim Tokens" button state
+            const allTasksCompleted = AppState.dailyFocusTasks.every(task => task.completed);
+            if (allTasksCompleted && !AppState.dailyFocusCompletedToday) {
+                claimTokensBtn.disabled = false;
+                claimTokensBtn.textContent = `Claim Your ${TOKEN_FOR_DAILY_QUEST} Tokens! ✨`;
+                claimTokensBtn.classList.remove('bg-green-500', 'hover:bg-green-500');
+                claimTokensBtn.classList.add('gradient-button');
+            } else if (AppState.dailyFocusCompletedToday) {
+                claimTokensBtn.disabled = true;
+                claimTokensBtn.textContent = `Tokens Claimed Today! 🎉`;
+                claimTokensBtn.classList.remove('gradient-button');
+                claimTokensBtn.classList.add('bg-green-500', 'hover:bg-green-500');
+            } else {
+                claimTokensBtn.disabled = true;
+                claimTokensBtn.textContent = `Complete all tasks to claim ${TOKEN_FOR_DAILY_QUEST} Tokens!`;
+                claimTokensBtn.classList.remove('gradient-button', 'bg-green-500', 'hover:bg-green-500');
+                claimTokensBtn.classList.add('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
             }
         }
 
-        function completeDailyQuest() {
-            if (!AppState.dailyQuestCompletedToday) {
+        function claimDailyFocusTokens() {
+            if (!AppState.dailyFocusCompletedToday && AppState.dailyFocusTasks.every(task => task.completed)) {
                 AppState.tokens += TOKEN_FOR_DAILY_QUEST;
-                AppState.dailyQuestCompletedToday = true;
+                AppState.dailyFocusCompletedToday = true;
                 saveState();
-                renderDailyQuest(); // Re-render to update status and tokens
-                showMessage(`Quest complete! You earned ${TOKEN_FOR_DAILY_QUEST} Glow Tokens! ✨`);
+                renderDailyFocus();
+                showMessage(`Daily Focus complete! You earned ${TOKEN_FOR_DAILY_QUEST} Glow Tokens! ✨`);
+            } else if (AppState.dailyFocusCompletedToday) {
+                showMessage("You've already claimed tokens for today's Daily Focus!");
             } else {
-                showMessage("You've already completed today's quest!");
+                showMessage("Please complete all tasks before claiming tokens!");
             }
         }
 
@@ -1362,6 +1468,10 @@
                             randomPillarForTip = skillsData.find(s => s.id === randomSkillId)?.title || randomPillarForTip;
                         }
                         fetchDailyTip(randomPillarForTip, 'message-box'); 
+                        break;
+                    case 'token-bonus': // New shop item
+                        AppState.tokens += 5; // Give 5 extra tokens
+                        showMessage('You received 5 bonus Glow Tokens! ✨');
                         break;
                     default:
                         showMessage('Unknown item purchased.');
@@ -1477,13 +1587,6 @@
             }, 3000);
         }
 
-        function formatDate(date) {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
-
         function loadState() {
             const savedState = localStorage.getItem('glowUpAppState');
             if (savedState) {
@@ -1492,8 +1595,9 @@
                 AppState.completedSkillTasks = parsedState.completedSkillTasks || {};
                 AppState.completedPillarTasks = parsedState.completedPillarTasks || {};
                 AppState.tokens = parsedState.tokens || 0;
-                AppState.dailyQuestCompletedToday = parsedState.dailyQuestCompletedToday || false;
-                AppState.lastDailyQuestDate = parsedState.lastDailyQuestDate || null;
+                AppState.dailyFocusTasks = parsedState.dailyFocusTasks || []; // Load daily focus tasks
+                AppState.dailyFocusCompletedToday = parsedState.dailyFocusCompletedToday || false; // Load daily focus status
+                AppState.lastDailyFocusDate = parsedState.lastDailyFocusDate || null; // Load last focus date
                 AppState.restDaysAvailable = parsedState.restDaysAvailable || 0;
                 
                 // Load personalization data
@@ -1533,8 +1637,9 @@
                 completedSkillTasks: AppState.completedSkillTasks,
                 completedPillarTasks: AppState.completedPillarTasks,
                 tokens: AppState.tokens,
-                dailyQuestCompletedToday: AppState.dailyQuestCompletedToday,
-                lastDailyQuestDate: AppState.lastDailyQuestDate,
+                dailyFocusTasks: AppState.dailyFocusTasks, // Save daily focus tasks
+                dailyFocusCompletedToday: AppState.dailyFocusCompletedToday,
+                lastDailyFocusDate: AppState.lastDailyFocusDate,
                 restDaysAvailable: AppState.restDaysAvailable,
                 // Save personalization data
                 userName: AppState.userName,
@@ -1598,6 +1703,9 @@
                 renderSkills();
                 renderSchedule('weekday');
                 renderShop();
+                if (AppState.currentView === 'daily-focus') { // Only start timer if daily-focus is the current view
+                    startCountdownTimer();
+                }
             }
 
             // Event listener for "Start Your Glow-Up!" button
@@ -1629,6 +1737,9 @@
                 renderSkills();
                 renderSchedule('weekday');
                 renderShop();
+                // When personalization is complete, default to dashboard and start timer
+                updateView('dashboard'); 
+                startCountdownTimer();
                 showMessage(`Welcome, ${AppState.userName}! Let's glow up! ✨`);
             });
 
@@ -1655,18 +1766,8 @@
                 }
             });
 
-            // Back buttons for detail views
-            document.getElementById('back-to-pillars-btn').addEventListener('click', () => {
-                document.getElementById('pillar-detail-view').classList.add('hidden');
-                document.getElementById('pillars').classList.remove('hidden');
-            });
-            document.getElementById('back-to-skills-btn').addEventListener('click', () => {
-                document.getElementById('skill-detail-view').classList.add('hidden');
-                document.getElementById('skills').classList.remove('hidden');
-            });
-
-            // Daily Quest completion handler
-            document.getElementById('complete-daily-quest-btn').addEventListener('click', completeDailyQuest);
+            // Daily Focus token claim handler
+            document.getElementById('claim-tokens-btn').addEventListener('click', claimDailyFocusTokens);
 
 
             document.getElementById('weekday-btn').addEventListener('click', () => renderSchedule('weekday'));
